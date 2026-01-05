@@ -13,7 +13,6 @@ Bitboard rook_moves_lkup[64][4096];
 Bitboard bishop_blockers[64];
 Bitboard bishop_moves_lkup[64][512];
 int nodes=0;
-int mdepth=7;
 
 const Bitboard clear_a=9187201950435737471ULL;
 const Bitboard clear_b=13816973012072644543ULL;
@@ -51,6 +50,8 @@ const Bitboard mask_7=71776119061217280ULL;
 const Bitboard mask_2=65280ULL;
 //const Bitboard mask_1=255ULL;
 
+const int inf = 9999;
+
 struct chess{
     Bitboard wp=0ULL;
     Bitboard wr=0ULL;
@@ -78,6 +79,4 @@ struct chess{
     bool turn=true;
 };
 
-inline int ctz(const Bitboard &pos){
-    return __builtin_ctzll(pos);
-}
+inline int ctz(const Bitboard &pos){ return __builtin_ctzll(pos); }
