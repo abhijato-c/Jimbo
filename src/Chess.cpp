@@ -1,12 +1,12 @@
-#include <sstream>
 #include "Init.cpp"
 #include "MoveGen.cpp"
 #include "MovePiece.cpp"
 #include "Misc.cpp"
 #include "LookupTables.cpp"
+#include <sstream>
 
 int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int time = 2147483647){
-    if (depth <= 1) return seval(b);
+    if (depth <= 1) return StaticEval(b);
     
     //check for game over, higher eval for delayed checkmate
     if(b.wk==0){
@@ -26,7 +26,7 @@ int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::hig
     for (int i=0; i<(int)Moves.size(); ++i){
         rd=b;
         move_piece(Moves[i], rd);
-        StaticEvals[i] = -seval(rd);
+        StaticEvals[i] = -StaticEval(rd);
     }
 
     // Evaluate positions in order of static evals
@@ -65,7 +65,7 @@ Move BestMove(chess &b, int MaxDepth){
     for (int i=0; i<(int)Moves.size(); ++i){
         rd=b;
         move_piece(Moves[i], rd);
-        StaticEvals[i] = -seval(rd);
+        StaticEvals[i] = -StaticEval(rd);
     }
 
     // Evaluate positions in order of static evals
@@ -92,7 +92,7 @@ Move BestMove(chess &b, int MaxDepth){
     return BestMove;
 }
 
-Move iterative_deepening(chess &b, int &t){
+Move IterativeDeepening(chess &b, int &t){
     auto s=chrono::high_resolution_clock::now();
     int d=2;
     Move bm=0;
@@ -110,7 +110,7 @@ Move iterative_deepening(chess &b, int &t){
         for (int i=0;i<(int)mvs.size();++i){
             rd=b;
             move_piece(mvs[i],rd);
-            advs[i]=-seval(rd);
+            advs[i]=-StaticEval(rd);
         }
 
         //evaluate advantage
@@ -155,7 +155,7 @@ void profile(int iters=6, string fen="r1bq3r/pp1pkpN1/3p4/8/8/2Q4P/P3PP1P/R2K1B1
         int best_move = BestMove(b, 6);
         move_piece(best_move,b);
         cout<<i<<"-";
-        prtmv(best_move);
+        PrintMove(best_move);
     }
     cout<<endl;
     auto stop=chrono::high_resolution_clock::now();
@@ -196,7 +196,7 @@ int main(){
             if (ss >> movesKeyword && movesKeyword == "moves") {
                 string moveStr;
                 while (ss >> moveStr) {
-                    // Move m = parseMove(moveStr, brd);
+                    //Make str -> move fucntion
                 }
             }
         } 
@@ -204,11 +204,11 @@ int main(){
             int lim = 3000; // Default 3s
             string sub;
             Move best;
-            // todo: multiple constraints
+            // todo: multiple constraints, wtime btime
             if(ss >> sub) {
                 if (sub == "movetime") {
                     ss >> lim;
-                    best = iterative_deepening(brd, lim);
+                    best = IterativeDeepening(brd, lim);
                 }
                 else if (sub == "depth") {
                     ss >> lim;
@@ -216,10 +216,10 @@ int main(){
                 }
             }
             else {
-                best = iterative_deepening(brd, lim);
+                best = IterativeDeepening(brd, lim);
             }
             cout << "bestmove ";
-            prtmv(best);
+            PrintMove(best);
         } 
         //todo: stop command
         else if (command == "quit") { break; }
