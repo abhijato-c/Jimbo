@@ -1,9 +1,9 @@
+import chess
 import chess.polyglot
 import requests
 import json
-import time
+import backoff
 import subprocess
-import chess
 
 ENDPOINTS = {
     "profile": "https://lichess.org/api/account",
@@ -26,12 +26,16 @@ ENDPOINTS = {
     "public_data": "https://lichess.org/api/user/{}",
     "listchlng": "https://lichess.org/api/challenge"
 }
-chlng_cldn=5
-last_chlng_hit=0
-mv_cldn=0.1
-last_mv_hit=0
+
+ChallengeCooldown = 5
+LastChallengeHit = 0
+MoveCooldown = 0.1
+LastMoveHit = 0
+
 token=str(open('token.txt','r').read().strip())
-hdr={"Authorization": f"Bearer {token}"}
+header={"Authorization": f"Bearer {token}"}
+
+@backoff.on_exception(backoff.expo, Exception, max_tries=5)
 def post(endpoint,args=[]):
     if len(args)==2:
         url=ENDPOINTS[endpoint].format(args[0],args[1])
@@ -40,10 +44,11 @@ def post(endpoint,args=[]):
     else:
         url=ENDPOINTS[endpoint]
     try:
-        return requests.post(url,headers=hdr)
+        return requests.post(url, headers=header)
     except Exception as e:
-        print("Skipping error:",e.split(':')[0])
+        print("Skipping POST, error: ",e)
 
+@backoff.on_exception(backoff.expo, Exception, max_tries=5)
 def get(endpoint,args=[]):
     if len(args)==2:
         url=ENDPOINTS[endpoint].format(args[0],args[1])
@@ -52,60 +57,60 @@ def get(endpoint,args=[]):
     else:
         url=ENDPOINTS[endpoint]
     try:
-        return requests.get(url,headers=hdr)
+        return requests.get(url, headers=header)
     except Exception as e:
-        print("Skipping error:",e.split(':')[0])
+        print("Skipping GET, error: ",e)
 
-def GetOngoingGames():
+def OngoingGames():
     return json.loads(get('playing').text)['nowPlaying']
 
-def PlayMove(id,move):
-    return post('move',args=[id,move])
+def PlayMove(GameID,move):
+    return post('move',args=[GameID,move])
 
-def ob(fen):
-    o=brdr.get(chess.Board(fen=fen))
+def OpeningBookMove(fen):
+    o = OpeningBook.get(chess.Board(fen=fen))
     if o:
-        o=chess.Board(fen=fen).uci(o.move)
-    return o
+        return chess.Board(fen=fen).uci(o.move)
+    else:
+        return None
 
 def BestMove(fen):
-    print(fen)
     fenb=fen
     fen=fen.split(' ')
+    move = None
     if int(fen[-1])<10:
-        output=ob(fenb)
-        if output:
-            print("ob:"+output)
-            return output
+        move = OpeningBookMove(fenb)
+    if move:
+        print("OpeningBook: "+move)
+        return move
+    
     eng.stdin.write("position fen " + fen[0]+" "+fen[1] + '\n')
     eng.stdin.write("go movetime 3000"+'\n')
     eng.stdin.flush()
-    output = eng.stdout.readline()[:-1].split(' ')[1]
-    print("eng:"+output)
-    return output
+    move = eng.stdout.readline()[:-1].split(' ')[1]
+
+    print("Engine: "+move)
+    return move
 
 def GetChallenges():
     return [x['id'] for x in get("listchlng").json()['in']]
 
-eng=subprocess.Popen(['./Engine.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-brdr=chess.polyglot.MemoryMappedReader('ob.bin')
-while True:
-    try:
-        if time.time()-last_chlng_hit>chlng_cldn:
-            last_chlng_hit=time.time()
-            for chlng in GetChallenges():
-                post('accept',[chlng])
-            chlng_cldn=5
-    except Exception as e:
-        chlng_cldn+=chlng_cldn/10
-        print("Challenge Error cooldown",chlng_cldn)
-    try:
-        if time.time()-last_mv_hit>mv_cldn:
-            last_mv_hit=time.time()
-            for game in [x for x in GetOngoingGames() if x['isMyTurn']]:
-                mv=BestMove(game['fen'])
-                PlayMove(game['gameId'],mv)
-            mv_cldn=0.5
-    except Exception as e:
-        mv_cldn+=mv_cldn/2
-        print("Move Error cooldown-",mv_cldn)
+
+if __name__ == '__main__':
+    print('Spawning engine and reading opening book', end='   ')
+    eng = subprocess.Popen(['./Engine.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    OpeningBook = chess.polyglot.MemoryMappedReader('OpeningBook.bin')
+    print('Done!')
+
+    print("Your bot is online and ready to accept challenges!")
+    while True:
+        # Accept Challenges
+        for challenge in GetChallenges():
+            post('accept',[challenge])
+            print('Accepted challenge ', challenge)
+        
+        # Play moves
+        for game in [x for x in OngoingGames() if x['isMyTurn']]:
+            print('Game: ' + game['gameId'] + ' FEN: ' + game['fen'])
+            move = BestMove(game['fen'])
+            PlayMove(game['gameId'], move)
