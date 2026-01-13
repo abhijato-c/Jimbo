@@ -285,8 +285,8 @@ inline vector<Move> moves_white(chess &b){
     Bitboard v=b.wp&mask_7;
     int i=-1;
     while(v!=0){
-        i+=__builtin_ctzll(v)+1;
-        v>>=__builtin_ctzll(v);
+        i+=ctz(v)+1;
+        v>>=ctz(v);
         if(((1ULL<<(i+8))&b.pieces)==0){
             moves.push_back((1 << 12) | ((i+8) << 6) | i);
             moves.push_back((2 << 12) | ((i+8) << 6) | i);
@@ -298,8 +298,8 @@ inline vector<Move> moves_white(chess &b){
     v=b.wp&mask_7&clear_h;
     i=-1;
     while(v!=0){
-        i+=__builtin_ctzll(v)+1;
-        v>>=__builtin_ctzll(v);
+        i+=ctz(v)+1;
+        v>>=ctz(v);
         if(((1ULL<<(i+7))&b.bpcs)!=0){
             moves.push_back((1 << 12) | ((i+7) << 6) | i);
             moves.push_back((2 << 12) | ((i+7) << 6) | i);
@@ -311,8 +311,8 @@ inline vector<Move> moves_white(chess &b){
     v=b.wp&mask_7&clear_a;
     i=-1;
     while(v!=0){
-        i+=__builtin_ctzll(v)+1;
-        v>>=__builtin_ctzll(v);
+        i+=ctz(v)+1;
+        v>>=ctz(v);
         if(((1ULL<<(i+9))&b.bpcs)!=0){
             moves.push_back((1 << 12) | ((i+9) << 6) | i);
             moves.push_back((2 << 12) | ((i+9) << 6) | i);
@@ -337,8 +337,8 @@ inline vector<Move> moves_black(chess &b){
     Bitboard v=b.bp&mask_2;
     int i=-1;
     while(v!=0){
-        i+=__builtin_ctzll(v)+1;
-        v>>=__builtin_ctzll(v);
+        i+=ctz(v)+1;
+        v>>=ctz(v);
         if(((1ULL<<(i-8))&b.pieces)==0){
             moves.push_back((1 << 12) | ((i-8) << 6) | i);
             moves.push_back((2 << 12) | ((i-8) << 6) | i);
@@ -350,8 +350,8 @@ inline vector<Move> moves_black(chess &b){
     v=b.bp&mask_2&clear_a;
     i=-1;
     while(v!=0){
-        i+=__builtin_ctzll(v)+1;
-        v>>=__builtin_ctzll(v);
+        i+=ctz(v)+1;
+        v>>=ctz(v);
         if(((1ULL<<(i-7))&b.wpcs)!=0){
             moves.push_back((1 << 12) | ((i-7) << 6) | i);
             moves.push_back((2 << 12) | ((i-7) << 6) | i);
@@ -363,8 +363,8 @@ inline vector<Move> moves_black(chess &b){
     v=b.bp&mask_2&clear_h;
     i=-1;
     while(v!=0){
-        i+=__builtin_ctzll(v)+1;
-        v>>=__builtin_ctzll(v);
+        i+=ctz(v)+1;
+        v>>=ctz(v);
         if(((1ULL<<(i-9))&b.wpcs)!=0){
             moves.push_back((1 << 12) | ((i-9) << 6) | i);
             moves.push_back((2 << 12) | ((i-9) << 6) | i);

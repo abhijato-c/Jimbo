@@ -50,31 +50,16 @@ const Bitboard mask_7=71776119061217280ULL;
 const Bitboard mask_2=65280ULL;
 //const Bitboard mask_1=255ULL;
 
-const int inf = 9999;
+const int inf = 300000;
 
 struct chess{
-    Bitboard wp=0ULL;
-    Bitboard wr=0ULL;
-    Bitboard wn=0ULL;
-    Bitboard wb=0ULL;
-    Bitboard wq=0ULL;
-    Bitboard wk=0ULL;
+    Bitboard wp=0ULL; Bitboard wr=0ULL; Bitboard wn=0ULL; Bitboard wb=0ULL; Bitboard wq=0ULL; Bitboard wk=0ULL;
+    Bitboard bp=0ULL; Bitboard br=0ULL; Bitboard bn=0ULL; Bitboard bb=0ULL; Bitboard bq=0ULL; Bitboard bk=0ULL;
 
-    Bitboard bp=0ULL;
-    Bitboard br=0ULL;
-    Bitboard bn=0ULL;
-    Bitboard bb=0ULL;
-    Bitboard bq=0ULL;
-    Bitboard bk=0ULL;
+    Bitboard bpcs=0; Bitboard wpcs=0; Bitboard pieces=0;
 
-    Bitboard bpcs=0;
-    Bitboard wpcs=0;
-    Bitboard pieces=0;
-
-    bool WCastleKing = true;
-    bool WCastleQueen = true;
-    bool BCastleKing = true;
-    bool BCastleQueen = true;
+    bool WCastleKing = true; bool WCastleQueen = true;
+    bool BCastleKing = true; bool BCastleQueen = true;
 
     bool turn=true;
 };

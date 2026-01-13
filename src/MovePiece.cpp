@@ -1,14 +1,15 @@
 inline void move_piece_white(const Move &mv, chess &b){
     Bitboard t = ~(1ULL << ((mv>>6) & 63));
+    b.bb &= t;
+    b.bk &= t;
+    b.bn &= t;
+    b.bp &= t;
+    b.bq &= t;
+    b.br &= t;
+
     if(((mv>>12) & 7) != 0){
         b.wp &= ~(1ULL << (mv & 63));
-        b.bb &= t;
-        b.bk &= t;
-        b.bn &= t;
-        b.bp &= t;
-        b.bq &= t;
-        b.br &= t;
-        switch(((mv>>12) & 3)){
+        switch(((mv>>12) & 7)){
             case 1:
                 b.wn |= ~t;
                 break;
@@ -25,12 +26,6 @@ inline void move_piece_white(const Move &mv, chess &b){
     }
     else{
         Bitboard f = (1ULL << (mv & 63));
-        b.bb &= t;
-        b.bk &= t;
-        b.bn &= t;
-        b.bp &= t;
-        b.bq &= t;
-        b.br &= t;
         if((b.wb&f)!=0)
             b.wb=(b.wb&(~f))|~t;
         else if((b.wr&f)!=0){
@@ -60,15 +55,16 @@ inline void move_piece_white(const Move &mv, chess &b){
 
 inline void move_piece_black(const Move &mv, chess &b){
     Bitboard t = ~(1ULL << ((mv>>6) & 63));
+    b.wb &= t;
+    b.wk &= t;
+    b.wn &= t;
+    b.wp &= t;
+    b.wq &= t;
+    b.wr &= t;
+
     if(((mv>>12) & 7) != 0){
         b.bp &= ~(1ULL << (mv & 63));
-        b.wb &= t;
-        b.wk &= t;
-        b.wn &= t;
-        b.wp &= t;
-        b.wq &= t;
-        b.wr &= t;
-        switch(((mv>>12) & 3)){
+        switch(((mv>>12) & 7)){
             case 1:
                 b.bn |= ~t;
                 break;
@@ -85,12 +81,6 @@ inline void move_piece_black(const Move &mv, chess &b){
     }
     else{
         Bitboard f = (1ULL << (mv & 63));
-        b.wb &= t;
-        b.wk &= t;
-        b.wn &= t;
-        b.wp &= t;
-        b.wq &= t;
-        b.wr &= t;
         if((b.bb&f)!=0)
             b.bb=(b.bb&(~f))|~t;
         else if((b.br&f)!=0){
