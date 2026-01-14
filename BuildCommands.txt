@@ -1,0 +1,22 @@
+Windows
+1. AVX-512 : g++ -std=c++20 -Ofast -flto -fno-exceptions -static -mpopcnt -mavx512f -mavx512bw -mavx512dq -mavx512vl -mbmi2  -mlzcnt -DUSE_BMI2 src/Chess.cpp -o build/Jimbo-win-avx512.exe
+2. BMI2    : g++ -std=c++20 -Ofast -flto -fno-exceptions -static -mpopcnt -mavx2 -mlzcnt -mbmi2 -DUSE_BMI2 src/Chess.cpp -o build/Jimbo-win-bmi2.exe
+3. AVX-2   : g++ -std=c++20 -Ofast -flto -fno-exceptions -static -mpopcnt -mavx2 -mlzcnt src/Chess.cpp -o build/Jimbo-win-avx2.exe
+4. POPCNT  : g++ -std=c++20 -Ofast -flto -fno-exceptions -static -mpopcnt -"msse4.2" src/Chess.cpp -o build/Jimbo-win-popcnt.exe
+5. x64     : g++ -std=c++20 -Ofast -flto -fno-exceptions -static src/Chess.cpp -o build/Jimbo-win-x64.exe
+
+Linux
+1. AVX-512 : g++ -std=c++20 -Ofast -flto -fno-exceptions -static-libgcc -static-libstdc++ -mpopcnt -mavx512f -mavx512bw -mavx512dq -mavx512vl -mbmi2 -DUSE_BMI2 -mlzcnt src/Chess.cpp -o build/Jimbo-linux-avx512
+2. BMI2    : g++ -std=c++20 -Ofast -flto -fno-exceptions -static-libgcc -static-libstdc++ -mpopcnt -mavx2 -mlzcnt -mbmi2 -DUSE_BMI2 src/Chess.cpp -o build/Jimbo-linux-bmi2
+3. AVX-2   : g++ -std=c++20 -Ofast -flto -fno-exceptions -static-libgcc -static-libstdc++ -mpopcnt -mavx2 -mlzcnt src/Chess.cpp -o build/Jimbo-linux-avx2
+4. POPCNT  : g++ -std=c++20 -Ofast -flto -fno-exceptions -static-libgcc -static-libstdc++ -mpopcnt -msse4.2 src/Chess.cpp -o build/Jimbo-linux-popcnt
+5. x64     : g++ -std=c++20 -Ofast -flto -fno-exceptions -static-libgcc -static-libstdc++ src/Chess.cpp -o build/Jimbo-linux-x64
+
+ARM
+1. v8 DotProd : g++ -std=c++20 -Ofast -flto -fno-exceptions -march=armv8.2-a+dotprod src/Chess.cpp -o build/Jimbo-armv8-dotprod
+2. v8         : g++ -std=c++20 -Ofast -flto -fno-exceptions -march=armv8-a src/Chess.cpp -o build/Jimbo-armv8
+3. v7 neon    : g++ -std=c++20 -Ofast -flto -fno-exceptions -march=armv7-a -mfpu=neon -mfloat-abi=hard src/Chess.cpp -o build/Jimbo-armv7-neon
+4. v7         : g++ -std=c++20 -Ofast -flto -fno-exceptions -march=armv7-a src/Chess.cpp -o build/Jimbo-armv7
+
+MacOS
+1. Apple Silicon : clang++ -std=c++20 -Ofast -flto -arch arm64 -mcpu=apple-m1 -fno-exceptions src/Chess.cpp -o build/Jimbo-mac-arm64

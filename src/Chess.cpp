@@ -139,13 +139,13 @@ Move IterativeDeepening(chess &b, int &t){
     return bm;
 }
 
-void profile(int iters=6, string fen="r1bq3r/pp1pkpN1/3p4/8/8/2Q4P/P3PP1P/R2K1B1R"){
+void profile(int iters=6, string fen="r1k4r/2p1bq2/b4n1p/pp4p1/3QP3/7N/PP3PPP/RNB1R2K w - - 1 19"){
     chess b;
     ParseFEN(fen,b);
     b.turn=false;
     auto start=chrono::high_resolution_clock::now();
     for(int i=1;i<=iters;++i){
-        int best_move = BestMove(b, 6);
+        int best_move = BestMove(b, 7);
         move_piece(best_move,b);
         cout<<i<<"-";
         cout << MoveToStr(best_move) << endl;
@@ -154,12 +154,12 @@ void profile(int iters=6, string fen="r1bq3r/pp1pkpN1/3p4/8/8/2Q4P/P3PP1P/R2K1B1
     auto stop=chrono::high_resolution_clock::now();
     cout<<"time per move:"<<chrono::duration_cast<chrono::microseconds>(stop - start).count()/((double)1000000*iters)<<endl;
     cout<<"nps:"<<nodes*(double)1000000/chrono::duration_cast<chrono::microseconds>(stop - start).count()<<endl;
-    cout<<"nodes per move:"<<nodes/(double)iters;
+    cout<<"nodes per move:"<<nodes/(double)iters<<endl;
 }
 
 int main(){
     GenerateLookupTables();
-
+    
     string line, command;
     chess brd;
 

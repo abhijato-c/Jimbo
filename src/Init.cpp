@@ -97,11 +97,11 @@ struct chess{
     bool turn=true;
 };
 
-inline int ctz(const Bitboard &b){ return countr_zero(b); }
-inline int popcnt(Bitboard &b){ return popcount(b); }
+inline int ctz(const Bitboard b){ return countr_zero(b); }
+inline int popcnt(const Bitboard b){ return popcount(b); }
 
 #ifndef USE_BMI2
-	Bitboard pdep(Bitboard val, Bitboard mask) {
+	inline Bitboard pdep(Bitboard val, Bitboard mask) {
 		Bitboard res = 0;
 		for (Bitboard m = mask; m; m &= (m - 1)) {
 			Bitboard bit = m & -m; // Get lowest set bit of mask

@@ -1,0 +1,3 @@
+g++ -std=c++20 -Ofast -flto -fno-exceptions -s -static-libgcc -static-libstdc++ -mpopcnt -msse4.2 -mbmi2 -DUSE_BMI2 src/Chess.cpp -o build/Jimbo-linux-bmi2
+g++ -std=c++20 -Ofast -flto -fno-exceptions -s -static-libgcc -static-libstdc++ -mpopcnt -msse4.2 src/Chess.cpp -o build/Jimbo-linux-popcnt
+g++ -std=c++20 -Ofast -flto -fno-exceptions -s -static-libgcc -static-libstdc++ src/Chess.cpp -o build/Jimbo-linux-x64

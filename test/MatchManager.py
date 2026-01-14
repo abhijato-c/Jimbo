@@ -2,8 +2,8 @@ import chess
 import chess.polyglot
 import subprocess
 
-eng_old=subprocess.Popen(['./magic'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-eng_new=subprocess.Popen(['./bmi'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+eng_old=subprocess.Popen(['./EngineOld.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+eng_new=subprocess.Popen(['./Jimbo-linux-x64'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
 brdr=chess.polyglot.MemoryMappedReader('OpeningBook.bin')
 
 fens=[]
@@ -27,7 +27,7 @@ def BestMove(fen,eng):
         return move
     
     eng.stdin.write("position fen " + fen + '\n')
-    eng.stdin.write("go movetime 600"+'\n')
+    eng.stdin.write("go depth 6"+'\n')
     eng.stdin.flush()
     move = eng.stdout.readline()[:-1].split(' ')[1]
     return move
