@@ -27,7 +27,7 @@ def BestMove(fen,eng):
         return move
     
     eng.stdin.write("position fen " + fen + '\n')
-    eng.stdin.write("go movetime 700"+'\n')
+    eng.stdin.write("go depth 6"+'\n')
     eng.stdin.flush()
     move = eng.stdout.readline()[:-1].split(' ')[1]
     return move

@@ -2,16 +2,45 @@
 #include <vector>
 #include <chrono>
 #include <immintrin.h>
+#include <bit>
 
 using namespace std;
 typedef unsigned long long int Bitboard;
 typedef unsigned int Move;
-typedef chrono::_V2::system_clock::time_point timept;
+typedef chrono::high_resolution_clock::time_point timept;
 
 Bitboard rook_blockers[64];
 Bitboard rook_moves_lkup[64][4096];
 Bitboard bishop_blockers[64];
 Bitboard bishop_moves_lkup[64][512];
+
+// For magic bitboards
+Bitboard RookMagics[64];
+int RookShifts[64];
+Bitboard BishopMagics[64];
+int BishopShifts[64];
+// Pre-defined bit counts for relevant occupancy bits (standard magic constants)
+const int RookBits[64] = {
+  12, 11, 11, 11, 11, 11, 11, 12,
+  11, 10, 10, 10, 10, 10, 10, 11,
+  11, 10, 10, 10, 10, 10, 10, 11,
+  11, 10, 10, 10, 10, 10, 10, 11,
+  11, 10, 10, 10, 10, 10, 10, 11,
+  11, 10, 10, 10, 10, 10, 10, 11,
+  11, 10, 10, 10, 10, 10, 10, 11,
+  12, 11, 11, 11, 11, 11, 11, 12
+};
+const int BishopBits[64] = {
+  6, 5, 5, 5, 5, 5, 5, 6,
+  5, 5, 5, 5, 5, 5, 5, 5,
+  5, 5, 7, 7, 7, 7, 5, 5,
+  5, 5, 7, 9, 9, 7, 5, 5,
+  5, 5, 7, 9, 9, 7, 5, 5,
+  5, 5, 7, 7, 7, 7, 5, 5,
+  5, 5, 5, 5, 5, 5, 5, 5,
+  6, 5, 5, 5, 5, 5, 5, 6
+};
+
 int nodes=0;
 
 const Bitboard clear_a=9187201950435737471ULL;
@@ -64,4 +93,5 @@ struct chess{
     bool turn=true;
 };
 
-inline int ctz(const Bitboard &pos){ return __builtin_ctzll(pos); }
+inline int ctz(const Bitboard &b){ return countr_zero(b); }
+inline int popcnt(Bitboard &b){ return popcount(b); }

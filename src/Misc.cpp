@@ -1,30 +1,30 @@
 inline int StaticEval(chess &b){
     ++nodes;
     if (b.turn)
-        return ((__builtin_popcountll(b.wb)*4) +
-                (__builtin_popcountll(b.wn)*3) +
-                (__builtin_popcountll(b.wp)) +
-                (__builtin_popcountll(b.wq)*9) +
-                (__builtin_popcountll(b.wk)*70) +
-                (__builtin_popcountll(b.wr)*5) -
-                (__builtin_popcountll(b.bb)*4) -
-                (__builtin_popcountll(b.bn)*3) -
-                (__builtin_popcountll(b.bp)) -
-                (__builtin_popcountll(b.bq)*9) -
-                (__builtin_popcountll(b.br)*5)-
-                (__builtin_popcountll(b.bk)*70));
-    return ((__builtin_popcountll(b.bb)*4) +
-                (__builtin_popcountll(b.bn)*3) +
-                (__builtin_popcountll(b.bp)) +
-                (__builtin_popcountll(b.bq)*9) +
-                (__builtin_popcountll(b.bk)*70) +
-                (__builtin_popcountll(b.br)*5) -
-                (__builtin_popcountll(b.wb)*4) -
-                (__builtin_popcountll(b.wn)*3) -
-                (__builtin_popcountll(b.wp)) -
-                (__builtin_popcountll(b.wq)*9) -
-                (__builtin_popcountll(b.wr)*5)-
-                (__builtin_popcountll(b.wk)*70));
+        return ((popcnt(b.wb)*4) +
+                (popcnt(b.wn)*3) +
+                (popcnt(b.wp)) +
+                (popcnt(b.wq)*9) +
+                (popcnt(b.wk)*70) +
+                (popcnt(b.wr)*5) -
+                (popcnt(b.bb)*4) -
+                (popcnt(b.bn)*3) -
+                (popcnt(b.bp)) -
+                (popcnt(b.bq)*9) -
+                (popcnt(b.br)*5)-
+                (popcnt(b.bk)*70));
+    return ((popcnt(b.bb)*4) +
+                (popcnt(b.bn)*3) +
+                (popcnt(b.bp)) +
+                (popcnt(b.bq)*9) +
+                (popcnt(b.bk)*70) +
+                (popcnt(b.br)*5) -
+                (popcnt(b.wb)*4) -
+                (popcnt(b.wn)*3) -
+                (popcnt(b.wp)) -
+                (popcnt(b.wq)*9) -
+                (popcnt(b.wr)*5)-
+                (popcnt(b.wk)*70));
 }
 
 inline string MoveToStr(const Move move){
