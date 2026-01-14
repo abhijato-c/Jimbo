@@ -3,6 +3,11 @@
 #include <chrono>
 #include <immintrin.h>
 #include <bit>
+#ifdef USE_BMI2
+    #include <immintrin.h>
+    #define pext(val, mask) _pext_u64(val, mask)
+	#define pdep(val, mask) _pdep_u64(val, mask)
+#endif
 
 using namespace std;
 typedef unsigned long long int Bitboard;
@@ -19,26 +24,25 @@ Bitboard RookMagics[64];
 int RookShifts[64];
 Bitboard BishopMagics[64];
 int BishopShifts[64];
-// Pre-defined bit counts for relevant occupancy bits (standard magic constants)
 const int RookBits[64] = {
-  12, 11, 11, 11, 11, 11, 11, 12,
-  11, 10, 10, 10, 10, 10, 10, 11,
-  11, 10, 10, 10, 10, 10, 10, 11,
-  11, 10, 10, 10, 10, 10, 10, 11,
-  11, 10, 10, 10, 10, 10, 10, 11,
-  11, 10, 10, 10, 10, 10, 10, 11,
-  11, 10, 10, 10, 10, 10, 10, 11,
-  12, 11, 11, 11, 11, 11, 11, 12
+	12, 11, 11, 11, 11, 11, 11, 12,
+	11, 10, 10, 10, 10, 10, 10, 11,
+	11, 10, 10, 10, 10, 10, 10, 11,
+	11, 10, 10, 10, 10, 10, 10, 11,
+	11, 10, 10, 10, 10, 10, 10, 11,
+	11, 10, 10, 10, 10, 10, 10, 11,
+	11, 10, 10, 10, 10, 10, 10, 11,
+	12, 11, 11, 11, 11, 11, 11, 12
 };
 const int BishopBits[64] = {
-  6, 5, 5, 5, 5, 5, 5, 6,
-  5, 5, 5, 5, 5, 5, 5, 5,
-  5, 5, 7, 7, 7, 7, 5, 5,
-  5, 5, 7, 9, 9, 7, 5, 5,
-  5, 5, 7, 9, 9, 7, 5, 5,
-  5, 5, 7, 7, 7, 7, 5, 5,
-  5, 5, 5, 5, 5, 5, 5, 5,
-  6, 5, 5, 5, 5, 5, 5, 6
+	6, 5, 5, 5, 5, 5, 5, 6,
+	5, 5, 5, 5, 5, 5, 5, 5,
+	5, 5, 7, 7, 7, 7, 5, 5,
+	5, 5, 7, 9, 9, 7, 5, 5,
+	5, 5, 7, 9, 9, 7, 5, 5,
+	5, 5, 7, 7, 7, 7, 5, 5,
+	5, 5, 5, 5, 5, 5, 5, 5,
+	6, 5, 5, 5, 5, 5, 5, 6
 };
 
 int nodes=0;
@@ -95,3 +99,15 @@ struct chess{
 
 inline int ctz(const Bitboard &b){ return countr_zero(b); }
 inline int popcnt(Bitboard &b){ return popcount(b); }
+
+#ifndef USE_BMI2
+	Bitboard pdep(Bitboard val, Bitboard mask) {
+		Bitboard res = 0;
+		for (Bitboard m = mask; m; m &= (m - 1)) {
+			Bitboard bit = m & -m; // Get lowest set bit of mask
+			if (val & 1) res |= bit;
+			val >>= 1;
+		}
+		return res;
+	}
+#endif

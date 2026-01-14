@@ -140,7 +140,13 @@ inline void WBmoves(chess &b, vector<Move> &Moves){
         iter >>= ctz(iter);
         iter >>= 1;
 
-        Bitboard it = (bishop_moves_lkup[i][_pext_u64(b.pieces,bishop_blockers[i])] &~ b.wpcs);
+        Bitboard it;
+        #ifdef USE_BMI2
+            it = (bishop_moves_lkup[i][pext(b.pieces,bishop_blockers[i])] &~ b.wpcs);
+        #else
+            it = (bishop_moves_lkup[i][((b.pieces & bishop_blockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.wpcs);
+        #endif
+
         int j = -1;
         while(it!=0){
             j += ctz(it) + 1;
@@ -160,7 +166,13 @@ inline void BBmoves(chess &b, vector<Move> &Moves){
         iter >>= ctz(iter);
         iter >>= 1;
 
-        Bitboard it = (bishop_moves_lkup[i][_pext_u64(b.pieces,bishop_blockers[i])] &~ b.bpcs);
+        Bitboard it;
+        #ifdef USE_BMI2
+            it = (bishop_moves_lkup[i][pext(b.pieces,bishop_blockers[i])] &~ b.bpcs);
+        #else
+            it = (bishop_moves_lkup[i][((b.pieces & bishop_blockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.bpcs);
+        #endif
+        
         int j = -1;
         while(it!=0){
             j += ctz(it) + 1;
@@ -180,7 +192,13 @@ inline void WRmoves(chess &b, vector<Move> &Moves){
         iter >>= ctz(iter);
         iter >>= 1;
 
-        Bitboard it = (rook_moves_lkup[i][_pext_u64(b.pieces,rook_blockers[i])] &~ b.wpcs);
+        Bitboard it;
+        #ifdef USE_BMI2
+            it = (rook_moves_lkup[i][pext(b.pieces,rook_blockers[i])] &~ b.wpcs);
+        #else
+            it = (rook_moves_lkup[i][((b.pieces & rook_blockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.wpcs);
+        #endif
+
         int j = -1;
         while(it!=0){
             j += ctz(it) + 1;
@@ -200,7 +218,13 @@ inline void BRmoves(chess &b, vector<Move> &Moves){
         iter >>= ctz(iter);
         iter >>= 1;
 
-        Bitboard it = (rook_moves_lkup[i][_pext_u64(b.pieces,rook_blockers[i])] &~ b.bpcs);
+        Bitboard it;
+        #ifdef USE_BMI2
+            it = (rook_moves_lkup[i][pext(b.pieces,rook_blockers[i])] &~ b.bpcs);
+        #else
+            it = (rook_moves_lkup[i][((b.pieces & rook_blockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.bpcs);
+        #endif
+
         int j = -1;
         while(it!=0){
             j += ctz(it) + 1;
@@ -220,7 +244,13 @@ inline void WQmoves(chess &b, vector<Move> &Moves){
         iter >>= ctz(iter);
         iter >>= 1;
 
-        Bitboard it = (rook_moves_lkup[i][_pext_u64(b.pieces,rook_blockers[i])] &~ b.wpcs);
+        Bitboard it;
+        #ifdef USE_BMI2
+            it = (rook_moves_lkup[i][pext(b.pieces,rook_blockers[i])] &~ b.wpcs);
+        #else
+            it = (rook_moves_lkup[i][((b.pieces & rook_blockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.wpcs);
+        #endif
+
         int j = -1;
         while(it!=0){
             j += ctz(it) + 1;
@@ -230,7 +260,12 @@ inline void WQmoves(chess &b, vector<Move> &Moves){
             Moves.push_back((j << 6) | i);
         }
 
-        it = (bishop_moves_lkup[i][_pext_u64(b.pieces,bishop_blockers[i])] &~ b.wpcs);
+        #ifdef USE_BMI2
+            it = (bishop_moves_lkup[i][pext(b.pieces,bishop_blockers[i])] &~ b.wpcs);
+        #else
+            it = (bishop_moves_lkup[i][((b.pieces & bishop_blockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.wpcs);
+        #endif
+
         j = -1;
         while(it!=0){
             j += ctz(it) + 1;
@@ -250,7 +285,13 @@ inline void BQmoves(chess &b, vector<Move> &Moves){
         iter >>= ctz(iter);
         iter >>= 1;
 
-        Bitboard it = (rook_moves_lkup[i][_pext_u64(b.pieces,rook_blockers[i])] &~ b.bpcs);
+        Bitboard it;
+        #ifdef USE_BMI2
+            it = (rook_moves_lkup[i][pext(b.pieces,rook_blockers[i])] &~ b.bpcs);
+        #else
+            it = (rook_moves_lkup[i][((b.pieces & rook_blockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.bpcs);
+        #endif
+
         int j = -1;
         while(it!=0){
             j += ctz(it) + 1;
@@ -260,7 +301,12 @@ inline void BQmoves(chess &b, vector<Move> &Moves){
             Moves.push_back((j << 6) | i);
         }
 
-        it = (bishop_moves_lkup[i][_pext_u64(b.pieces,bishop_blockers[i])] &~ b.bpcs);
+        #ifdef USE_BMI2
+            it = (bishop_moves_lkup[i][pext(b.pieces,bishop_blockers[i])] &~ b.bpcs);
+        #else
+            it = (bishop_moves_lkup[i][((b.pieces & bishop_blockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.bpcs);
+        #endif
+        
         j = -1;
         while(it!=0){
             j += ctz(it) + 1;
