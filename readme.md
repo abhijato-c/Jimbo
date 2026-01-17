@@ -17,10 +17,12 @@ Go through the UCI command support of the readme to see what commands are availa
 
 ### Setting up the Lichess Bot
 
+The code and files required for the Lichess bot is present in the `Lichess Bot` directory. Instructions here are in reference to that.
+
 1. Ensure you have python installed.
 2. Download the packages in `requirements.txt`
 3. Make a new Lichess account and create an API token with all 'Bot' permissions. This token will be pasted in the `token.txt` file. For help, just look up how to make a lichess bot account. There is already extensive documentation on that.
-4. Create a file named `token.txt` in the root directory.
+4. Create a file named `token.txt` in the directory.
 5. Paste your Lichess API token into `token.txt`.
 7. Place your engine and opening book in the same directory as the script, and ensure they are named `Engine` and `OpeningBook.bin` respectively. You can get the opening book from this repo, and just download a suitable binary and remane it to `Engine`. You can change these names inside the script, if you wish to.
 6. Run the bot script:
@@ -63,9 +65,10 @@ python3 LichessBot.py
 * `src/MovePiece.cpp`: Logic for updating board state after moves.
 * `src/LookupTables.cpp`: Magic bitboard or sliding piece lookup generation.
 * `src/Misc.cpp`: Printing moves, Parse FEN, etc.
+* `Lichess Bot/LichessBot.py`: Python script for Lichess API integration.
+* `Lichess Bot/OpeningBook.bin`: An opening book that bot.py uses(not connected to the engine).
+* `Lichess Bot/requirements.txt`: Python pip requirements file to run the bot.
+* `Lichess Bot/token.txt`: (User-provided) API token for Lichess.
+* `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the 'pgns' directory.
 * `pgns/*.pgn`: 249 PGN files downloaded from PGNMentor to make an opening book.
 * `test/`: A folder containing a script to check if the new version of the engine is actually better.
-* `LichessBot.py`: Python script for Lichess API integration.
-* `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the 'pgns' directory.
-* `OpeningBook.bin`: An opening book that bot.py uses(not connected to the engine).
-* `token.txt`: (User-provided) API token for Lichess.
