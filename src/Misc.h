@@ -4,7 +4,7 @@
 #include "Defs.h"
 #include <sstream>
 
-inline int StaticEval(chess &b){
+inline int StaticEval(const chess &b){
     ++nodes;
     if (b.turn)
         return ((popcnt(b.wb)*4) +

@@ -8,7 +8,7 @@
 
 // TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
 
-inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int time = 2147483647){
+inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int time = 2147483647){
     if(depth == 1) return StaticEval(b);
     //check for game over, higher eval for delayed checkmate
     if(b.wk == 0 || b.bk == 0) return (-128 - depth);
@@ -47,7 +47,7 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chro
 }
 
 
-inline Move BestMove(chess &b, int MaxDepth){
+inline Move BestMove(const chess &b, int MaxDepth){
     chess rd;
     int eval;
     int alpha = -inf;
@@ -87,7 +87,7 @@ inline Move BestMove(chess &b, int MaxDepth){
     return Best;
 }
 
-inline Move IterativeDeepening(chess &b, int &t){
+inline Move IterativeDeepening(const chess &b, int t){
     auto s=chrono::high_resolution_clock::now();
     int d=2;
     Move bm=0;

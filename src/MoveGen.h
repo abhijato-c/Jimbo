@@ -3,7 +3,7 @@
 
 #include "Defs.h"
 
-inline void WKmoves(chess &b, vector<Move> &Moves){
+inline void WKmoves(const chess &b, vector<Move> &Moves){
     int i = ctz(b.wk);
     
     if ((((1ULL << i) & clear_h) << 7) &~ b.wpcs)
@@ -24,7 +24,7 @@ inline void WKmoves(chess &b, vector<Move> &Moves){
         Moves.push_back(ctz((1ULL << i) >> 1) << 6 | i);
 }
 
-inline void BKmoves(chess &b, vector<Move> &Moves){
+inline void BKmoves(const chess &b, vector<Move> &Moves){
     int i = ctz(b.bk);
 
     if ((((1ULL << i) & clear_h) << 7) &~ b.bpcs)
@@ -45,7 +45,7 @@ inline void BKmoves(chess &b, vector<Move> &Moves){
         Moves.push_back(ctz((1ULL << i) >> 1) << 6 | i);
 }
 
-inline void WNmoves(chess &b, vector<Move> &Moves){
+inline void WNmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.wn;
     int i = -1;
     while(iter!=0){
@@ -72,7 +72,7 @@ inline void WNmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void BNmoves(chess &b, vector<Move> &Moves){
+inline void BNmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.bn;
     int i = -1;
     while(iter!=0){
@@ -99,7 +99,7 @@ inline void BNmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void WPmoves(chess &b, vector<Move> &Moves){
+inline void WPmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.wp;
     int i = -1;
     while(iter!=0){
@@ -118,7 +118,7 @@ inline void WPmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void BPmoves(chess &b, vector<Move> &Moves){
+inline void BPmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.bp;
     int i = -1;
     while(iter!=0){
@@ -137,7 +137,7 @@ inline void BPmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void WBmoves(chess &b, vector<Move> &Moves){
+inline void WBmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.wb;
     int i = -1;
     while(iter!=0){
@@ -163,7 +163,7 @@ inline void WBmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void BBmoves(chess &b, vector<Move> &Moves){
+inline void BBmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.bb;
     int i = -1;
     while(iter!=0){
@@ -189,7 +189,7 @@ inline void BBmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void WRmoves(chess &b, vector<Move> &Moves){
+inline void WRmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.wr;
     int i = -1;
     while(iter!=0){
@@ -215,7 +215,7 @@ inline void WRmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void BRmoves(chess &b, vector<Move> &Moves){
+inline void BRmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.br;
     int i = -1;
     while(iter!=0){
@@ -241,7 +241,7 @@ inline void BRmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void WQmoves(chess &b, vector<Move> &Moves){
+inline void WQmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.wq;
     int i = -1;
     while(iter!=0){
@@ -282,7 +282,7 @@ inline void WQmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline void BQmoves(chess &b, vector<Move> &Moves){
+inline void BQmoves(const chess &b, vector<Move> &Moves){
     Bitboard iter = b.bq;
     int i = -1;
     while(iter!=0){
@@ -323,7 +323,7 @@ inline void BQmoves(chess &b, vector<Move> &Moves){
     }
 }
 
-inline vector<Move> moves_white(chess &b){
+inline vector<Move> moves_white(const chess &b){
     vector<Move> moves = {};
 
     WKmoves(b,moves);
@@ -375,7 +375,7 @@ inline vector<Move> moves_white(chess &b){
     return moves;
 }
 
-inline vector<Move> moves_black(chess &b){
+inline vector<Move> moves_black(const chess &b){
     vector<Move> moves = {};
 
     BKmoves(b,moves);
@@ -427,7 +427,7 @@ inline vector<Move> moves_black(chess &b){
     return moves;
 }
 
-inline vector<Move> pl_moves(chess &b){
+inline vector<Move> pl_moves(const chess &b){
     switch (b.turn){
         case true:
             return moves_white(b);

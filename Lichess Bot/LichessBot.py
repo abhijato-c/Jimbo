@@ -15,8 +15,8 @@ import backoff
 
 BASE_URL = "https://lichess.org/"
 LOG_LEVEL = logging.INFO
-TOKEN_FILE_PATH = Path('token.txt')
-OPENING_BOOK_PATH = Path('OpeningBook.bin')
+TOKEN_FILE_PATH = Path('Lichess Bot/token.txt')
+OPENING_BOOK_PATH = Path('Lichess Bot/OpeningBook.bin')
 ENDPOINTS = {
     "profile": "api/account",
     "playing": "api/account/playing",
@@ -40,9 +40,9 @@ ENDPOINTS = {
 }
 
 if platform.system() == 'Windows':
-    ENGINE_PATH = Path('./Engine.exe')
+    ENGINE_PATH = Path('./Lichess Bot/Engine.exe')
 else:
-    ENGINE_PATH = Path('./Engine')
+    ENGINE_PATH = Path('./Lichess Bot/Engine')
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=LOG_LEVEL,  datefmt='%H:%M:%S', force=True)
 logger = logging.getLogger(__name__)
@@ -159,7 +159,7 @@ class LichessBot:
     def CalculateTimeLimit(self, SecondsLeft: int, MovesPlayed: int) -> float:
         if MovesPlayed < 60: MovesLeft = 80 - MovesPlayed
         else: MovesLeft = 20
-        Time = max(0.2, SecondsLeft / MovesLeft)
+        Time = max(0.2, SecondsLeft / MovesLeft - 0.2)
         if Time > 10.0: Time = 5.0
         return Time
 
