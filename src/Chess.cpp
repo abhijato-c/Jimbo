@@ -33,7 +33,7 @@ int main(){
             if (sub == "startpos") {ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);} 
             else if (sub == "fen") {
                 string fenStr = "";
-                for (int i = 2; i < command.size(); ++i){fenStr += command[i] + " ";}
+                for (int i = 2; i < (int)command.size(); ++i){fenStr += command[i] + " ";}
                 ParseFEN(fenStr, brd);
             }
             else if (sub == "moves"){

@@ -8,28 +8,36 @@
 
 // TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
 
-inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int time = 2147483647){
+inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int64_t time = INT64_MAX){
     if(depth == 1) return StaticEval(b);
     //check for game over, higher eval for delayed checkmate
     if(b.wk == 0 || b.bk == 0) return (-128 - depth);
 
     chess rd;
-    vector<Move> Moves = pl_moves(b);
+    MoveList Moves = PseudoLegals(b);
 
     // Compute static evals of each position for move ordering
     int StaticEvals[Moves.size()];
-    for (int i=0; i<(int)Moves.size(); ++i){
-        rd=b;
-        move_piece(Moves[i], rd);
-        StaticEvals[i] = -StaticEval(rd);
+    for (int i=0; i<Moves.size(); ++i){
+        Move m = Moves[i];
+        int score = 0;
+    
+        // Capture check
+        if (b.pieces & (1ULL << ((m >> 6) & 63))) {
+            score += 100;
+        }
+        // Promotions
+        score += ((m >> 12) & 7) * 100;
+
+        StaticEvals[i] = score;
     }
 
     // Evaluate positions in order of static evals
-    for(int i=0; i<(int)Moves.size(); ++i){
+    for(int i=0; i<Moves.size(); ++i){
         // Find position with highest static eval
         int MaxEval = StaticEvals[0];
         int MaxIndex = 0;
-        for(int j=1; j<(int)Moves.size(); ++j){
+        for(int j=1; j<Moves.size(); ++j){
             if(StaticEvals[j] > MaxEval){ 
                 MaxEval = StaticEvals[j]; 
                 MaxIndex=j;
@@ -39,9 +47,9 @@ inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start 
         rd=b;
         move_piece(Moves[MaxIndex], rd);
         alpha = max(-MiniMax(rd, depth-1, -beta, -alpha, start, time), alpha);
-        if(alpha>=beta) return alpha;
 
-        if((int)(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-start).count())>time) break;
+        if(alpha>=beta) return alpha;
+        if(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-start).count() > time) break;
     }
     return alpha;
 }
@@ -53,22 +61,30 @@ inline Move BestMove(const chess &b, int MaxDepth){
     int alpha = -inf;
     int beta = inf;
     Move Best = 0;
-    vector<Move> Moves = pl_moves(b);
+    MoveList Moves = PseudoLegals(b);
 
     // Compute static evals of each position for move ordering
     int StaticEvals[Moves.size()];
-    for (int i=0; i<(int)Moves.size(); ++i){
-        rd=b;
-        move_piece(Moves[i], rd);
-        StaticEvals[i] = -StaticEval(rd);
+    for (int i=0; i<Moves.size(); ++i){
+        Move m = Moves[i];
+        int score = 0;
+    
+        // Capture check
+        if (b.pieces & (1ULL << ((m >> 6) & 63))) {
+            score += 100;
+        }
+        // Promotions
+        score += ((m >> 12) & 7) * 100;
+
+        StaticEvals[i] = score;
     }
 
     // Evaluate positions in order of static evals
-    for(int i=0; i<(int)Moves.size(); ++i){
+    for(int i=0; i<Moves.size(); ++i){
         // Find position with highest static eval
         int MaxEval = StaticEvals[0];
         int MaxIndex = 0;
-        for(int j=1; j<(int)Moves.size(); ++j){
+        for(int j=1; j<Moves.size(); ++j){
             if(StaticEvals[j] > MaxEval){ 
                 MaxEval = StaticEvals[j]; 
                 MaxIndex=j;
@@ -87,33 +103,41 @@ inline Move BestMove(const chess &b, int MaxDepth){
     return Best;
 }
 
-inline Move IterativeDeepening(const chess &b, int t){
+inline Move IterativeDeepening(const chess &b, int64_t t){
     auto s=chrono::high_resolution_clock::now();
     int d=2;
     Move bm=0;
     int besteval = -inf;
-    while((int)(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count())<t){
+    while(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count() < t){
         chess rd;
         int eval;
         int bestmove = 0;
         int alpha = -inf;
         int beta = inf;
-        vector<Move> Moves = pl_moves(b);
+        MoveList Moves = PseudoLegals(b);
 
         // Compute static evals of each position for move ordering
         int StaticEvals[Moves.size()];
-        for (int i=0; i<(int)Moves.size(); ++i){
-            rd=b;
-            move_piece(Moves[i], rd);
-            StaticEvals[i] = -StaticEval(rd);
+        for (int i=0; i<Moves.size(); ++i){
+            Move m = Moves[i];
+            int score = 0;
+        
+            // Capture check
+            if (b.pieces & (1ULL << ((m >> 6) & 63))) {
+                score += 100;
+            }
+            // Promotions
+            score += ((m >> 12) & 7) * 100;
+
+            StaticEvals[i] = score;
         }
 
         // Evaluate positions in order of static evals
-        for(int i=0; i<(int)Moves.size(); ++i){
+        for(int i=0; i<Moves.size(); ++i){
             // Find position with highest static eval
             int MaxEval = StaticEvals[0];
             int MaxIndex = 0;
-            for(int j=1; j<(int)Moves.size(); ++j){
+            for(int j=1; j<Moves.size(); ++j){
                 if(StaticEvals[j] > MaxEval){ 
                     MaxEval = StaticEvals[j]; 
                     MaxIndex=j;
@@ -123,7 +147,7 @@ inline Move IterativeDeepening(const chess &b, int t){
             rd=b;
             move_piece(Moves[MaxIndex], rd);
             eval = -MiniMax(rd, d, -beta, -alpha, s, t);
-            if((int)(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count())>t){
+            if(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count() > t){
                 if(alpha>besteval) return bestmove; 
                 return bm;
             }

@@ -12,7 +12,7 @@ fil.close()
 
 def BestMove(fen,eng):
     board = chess.Board(fen=fen)
-    result = eng.play(board, chess.engine.Limit(depth=6))
+    result = eng.play(board, chess.engine.Limit(time=1))
     move = result.move.uci()
     return move
 
@@ -21,18 +21,20 @@ draws=0
 losses=0
 print(len(fens),"fens")
 
-for i in range(500,len(fens)):
+for i in range(len(fens)):
     fen=fens[i][:-1]
-    print("game",i+1,"/",len(fens))
+    print("Round - " + str(i+1) + "/" + str(len(fens)))
     print()
 
     # Old as white, new as black
     b=chess.Board(fen=fen)
     while(not b.is_game_over()):
         if b.turn==chess.WHITE:
-            b.push(b.parse_uci(BestMove(b.fen(),eng_old)))
+            best = BestMove(b.fen(),eng_old)
         else:
-            b.push(b.parse_uci(BestMove(b.fen(),eng_new)))
+            best = BestMove(b.fen(),eng_new)
+        
+        b.push(b.parse_uci(best))
 
     winner = b.outcome().winner
     if winner == chess.WHITE: losses+=1
@@ -43,9 +45,11 @@ for i in range(500,len(fens)):
     b=chess.Board(fen=fen)
     while(not b.is_game_over()):
         if b.turn==chess.WHITE:
-            b.push(b.parse_uci(BestMove(b.fen(),eng_new)))
+            best = BestMove(b.fen(),eng_new)
         else:
-            b.push(b.parse_uci(BestMove(b.fen(),eng_old)))
+            best = BestMove(b.fen(),eng_old)
+        
+        b.push(b.parse_uci(best))
     
     winner = b.outcome().winner
     if winner == chess.WHITE: wins+=1
