@@ -1,9 +1,9 @@
 import chess
 import chess.polyglot
-import subprocess
+import chess.engine
 
-eng_old=subprocess.Popen(['./EngineOld.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-eng_new=subprocess.Popen(['./Jimbo-linux-x64'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+eng_old=chess.engine.SimpleEngine.popen_uci('./EngineOld.out')
+eng_new=chess.engine.SimpleEngine.popen_uci('./Engine')
 brdr=chess.polyglot.MemoryMappedReader('OpeningBook.bin')
 
 fens=[]
@@ -26,17 +26,16 @@ def BestMove(fen,eng):
     if move:
         return move
     
-    eng.stdin.write("position fen " + fen + '\n')
-    eng.stdin.write("go depth 6"+'\n')
-    eng.stdin.flush()
-    move = eng.stdout.readline()[:-1].split(' ')[1]
+    board = chess.Board(fen=fen)
+    result = eng.play(board, chess.engine.Limit(depth=6))
+    move = result.move.uci()
     return move
 
 wins=0
 draws=0
 losses=0
 print(len(fens),"fens")
-for i in range(100,len(fens)):
+for i in range(200,len(fens)):
     fen=fens[i][:-1]
     print("game",i+1,"/",len(fens))
     print()
