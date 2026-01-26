@@ -4,11 +4,37 @@
 #include "Misc.h"
 #include "LookupTables.h"
 #include "MakeMove.h"
+#include <thread>
+#include <atomic>
 
-bool isConvertibleToInt(const std::string& str, int& value) {
-    std::stringstream ss(str);
+std::atomic<bool> StopSignal(false);
+std::atomic<bool> IsSearching(false);
+std::thread SearchThread;
+
+bool isConvertibleToInt(const string& str, int& value) {
+    stringstream ss(str);
     ss >> value; 
     return ss && ss.eof(); 
+}
+
+void RunSearch(chess brd, int TimeLimit, int DepthLimit){
+    IsSearching = true;
+    StopSignal = false;
+
+    Move best = 0;
+
+    if (TimeLimit == 0 && DepthLimit == 0) best = IterativeDeepening(brd, 3000, INT_MAX);
+    else if (DepthLimit == 0) best = IterativeDeepening(brd, TimeLimit, INT_MAX);
+    else if (TimeLimit == 0) best = IterativeDeepening(brd, INT64_MAX, DepthLimit);
+    else  best = IterativeDeepening(brd, TimeLimit, DepthLimit);
+
+    cout << "bestmove " << MoveToStr(best) << endl;
+    IsSearching = false;
+}
+
+void StopSearch(){
+    StopSignal = true;
+    if (SearchThread.joinable()) SearchThread.join();
 }
 
 int main(){
@@ -31,11 +57,13 @@ int main(){
         }
 
         string cmd = command[0];
+        StopSearch();
 
         if (cmd == "uci") {cout << "uciok" << endl;} 
         else if (cmd == "isready") {cout << "readyok" << endl;} 
         else if (cmd == "position") {
             string sub = command[1];
+
             if (sub == "startpos") {ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);} 
             else if (sub == "fen") {
                 string fenStr = "";
@@ -45,7 +73,7 @@ int main(){
             else if (sub == "moves"){
                 cout << "Moves command currently not supported, please try fen or startpos!" << endl;
             }
-            else { cout << "Illegal command!" << endl; }
+            else { cout << "Illegal subcommand " << sub << "!" << endl; }
         } 
         else if (cmd == "go") {
             Move best = 0;
@@ -83,21 +111,7 @@ int main(){
             }
 
             if (!Success) continue;
-
-            if (TimeLimit == 0 && DepthLimit == 0){
-                best = IterativeDeepening(brd, 3000);
-            }
-            else if (DepthLimit == 0){
-                best = IterativeDeepening(brd, TimeLimit);
-            }
-            else if (TimeLimit == 0){
-                best = BestMove(brd, DepthLimit);
-            }
-            else {
-                best = IterativeDeepening(brd, TimeLimit, DepthLimit);
-            }
-
-            cout << "bestmove " << MoveToStr(best) << endl;
+            SearchThread = thread(RunSearch, brd, TimeLimit, DepthLimit);
         }
         else if (cmd == "ucinewgame") {
             // Clear search history/Transposition Tables, dont exist now so ignore to prevent illegal cmd
@@ -106,8 +120,11 @@ int main(){
         else if (cmd == "setoption") {
             // ignore
         }
+        else if (cmd == "stop") {
+            // search already stopped when input arrived, can ignore.
+        }
         else if (cmd == "quit") { break; }
-        else { cout << "Illegal command!" << endl;}
+        else { cout << "Illegal command " << cmd << "!" << endl;}
     }
     return 0;
 }

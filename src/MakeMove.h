@@ -48,14 +48,13 @@ inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start 
         move_piece(Moves[MaxIndex], rd);
         alpha = max(-MiniMax(rd, depth-1, -beta, -alpha, start, time), alpha);
 
-        if(alpha>=beta) return alpha;
-        if(TimeElapsed(start) > time) break;
+        if(alpha >= beta || TimeElapsed(start) > time || StopSignal.load()) return alpha;
     }
     return alpha;
 }
 
 
-inline Move BestMove(const chess &b, int MaxDepth){
+/*inline Move BestMove(const chess &b, int MaxDepth){
     chess rd;
     int eval;
     int alpha = -inf;
@@ -101,14 +100,14 @@ inline Move BestMove(const chess &b, int MaxDepth){
         if(alpha>=beta) break;
     }
     return Best;
-}
+}*/
 
-inline Move IterativeDeepening(const chess &b, int64_t t, int Mdepth = INT32_MAX){
+inline Move IterativeDeepening(const chess &b, int64_t time, int Mdepth){
     timept StartTime = chrono::high_resolution_clock::now();
     int CurrentDepth=2;
     Move OverallBestMove = 0;
     int BestEval = -inf;
-    while(TimeElapsed(StartTime) < t && CurrentDepth <= Mdepth){
+    while(TimeElapsed(StartTime) < time && CurrentDepth <= Mdepth && !StopSignal.load()){
         chess rd;
         int eval;
         int bestmove = 0;
@@ -146,8 +145,8 @@ inline Move IterativeDeepening(const chess &b, int64_t t, int Mdepth = INT32_MAX
             StaticEvals[MaxIndex] = -inf;
             rd=b;
             move_piece(Moves[MaxIndex], rd);
-            eval = -MiniMax(rd, CurrentDepth, -beta, -alpha, StartTime, t);
-            if(TimeElapsed(StartTime) > t){
+            eval = -MiniMax(rd, CurrentDepth, -beta, -alpha, StartTime, time);
+            if(TimeElapsed(StartTime) > time || StopSignal.load()){
                 if(alpha > BestEval) return bestmove; 
                 return OverallBestMove;
             }
@@ -171,7 +170,7 @@ inline void profile(int iters=6, string fen="r1k4r/2p1bq2/b4n1p/pp4p1/3QP3/7N/PP
     b.turn=false;
     auto start=chrono::high_resolution_clock::now();
     for(int i=1;i<=iters;++i){
-        int best_move = BestMove(b, 7);
+        int best_move = IterativeDeepening(b, INT64_MAX, 7);
         move_piece(best_move,b);
         cout<<i<<"-";
         cout << MoveToStr(best_move) << endl;
