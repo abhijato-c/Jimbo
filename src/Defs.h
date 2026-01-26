@@ -115,6 +115,10 @@ inline Bitboard BishopMovesLookup[64][512];
 	};
 #endif
 
+inline int64_t TimeElapsed(timept t){
+	return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - t).count();
+}
+
 inline int ctz(const Bitboard b) { return std::countr_zero(b); }
 inline int popcnt(const Bitboard b) { return std::popcount(b); }
 #ifndef USE_BMI2
