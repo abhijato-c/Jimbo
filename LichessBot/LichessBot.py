@@ -266,7 +266,8 @@ class LichessBot:
                             if event['destUser']['id'] != self.Username: continue # Ignore outgoing
 
                             logger.info(f"Incoming challenge from {event['challenger']['id']}")
-                            self.AcceptChallenge(event['id'])
+                            if event['variant']['key'] == "standard": self.AcceptChallenge(event['id'])
+                            else: self.RejectChallenge(event["id"], "variant")
                         
                         # Handle Game Start
                         elif event['type'] == 'gameStart':
