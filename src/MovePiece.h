@@ -3,10 +3,11 @@
 
 #include "Defs.h"
 
-inline void MovePieceWhite(Move& mv, chess& b){
+inline void MoveWhitePiece(Move& mv, chess& b){
     Bitboard to = (1ULL << ((mv>>6) & 63));
     Bitboard f = (1ULL << (mv & 63));
 
+    // Capture
     if ((b.pieces & to) != 0){
         if((b.bp & to) != 0){
             b.bp &= ~to;
@@ -47,6 +48,7 @@ inline void MovePieceWhite(Move& mv, chess& b){
             break;
         case 3:
             b.wr = (b.wr & ~f) | to;
+            mv |= ((b.WCastleKing << 3) | (b.WCastleQueen << 2) | (b.BCastleKing << 1) | b.BCastleQueen) << 21;
             if ((mv & 63) == 0) b.WCastleKing = false;
             else if ((mv & 63) == 7) b.WCastleQueen = false;
             break;
@@ -55,6 +57,15 @@ inline void MovePieceWhite(Move& mv, chess& b){
             break;
         case 5:
             b.wk = (b.wk & ~f) | to;
+
+            // Castle
+            if (ctz(f) == 3){
+                // Kingside
+                if (ctz(to) == 1 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 0)) | (1ULL << 2);
+                //Queen
+                else if (ctz(to) == 5 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 7)) | (1ULL << 4);
+            }
+            mv |= ((b.WCastleKing << 3) | (b.WCastleQueen << 2) | (b.BCastleKing << 1) | b.BCastleQueen) << 21;
             b.WCastleKing = false;
             b.WCastleQueen = false;
             break;
@@ -79,17 +90,13 @@ inline void MovePieceWhite(Move& mv, chess& b){
             b.wq |= to;
             break;
     }
-    
-    b.turn=false;
-    b.bpcs=b.bp|b.br|b.bn|b.bb|b.bq|b.bk;
-    b.wpcs=b.wp|b.wr|b.wn|b.wb|b.wq|b.wk;
-    b.pieces=b.bpcs|b.wpcs;
 }
 
-inline void MovePieceBlack(Move& mv, chess& b){
+inline void MoveBlackPiece(Move& mv, chess& b){
     Bitboard to = (1ULL << ((mv>>6) & 63));
     Bitboard f = (1ULL << (mv & 63));
 
+    // Capture
     if ((b.pieces & to) != 0){
         if((b.wp & to) != 0){
             b.wp &= ~to;
@@ -130,6 +137,7 @@ inline void MovePieceBlack(Move& mv, chess& b){
             break;
         case 3:
             b.br = (b.br & ~f) | to;
+            mv |= ((b.WCastleKing << 3) | (b.WCastleQueen << 2) | (b.BCastleKing << 1) | b.BCastleQueen) << 21;
             if ((mv & 63) == 56) b.BCastleKing = false;
             else if ((mv & 63) == 63) b.BCastleQueen = false;
             break;
@@ -138,6 +146,15 @@ inline void MovePieceBlack(Move& mv, chess& b){
             break;
         case 5:
             b.bk = (b.bk & ~f) | to;
+
+            // Castle
+            if (ctz(f) == 59){
+                // Kingside
+                if (ctz(to) == 57 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 56)) | (1ULL << 58);
+                //Queen
+                else if (ctz(to) == 61 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 63)) | (1ULL << 60);
+            }
+            mv |= ((b.WCastleKing << 3) | (b.WCastleQueen << 2) | (b.BCastleKing << 1) | b.BCastleQueen) << 21;
             b.BCastleKing = false;
             b.BCastleQueen = false;
             break;
@@ -162,20 +179,16 @@ inline void MovePieceBlack(Move& mv, chess& b){
             b.bq |= to;
             break;
     }
-
-    b.turn=true;
-    b.bpcs=b.bp|b.br|b.bn|b.bb|b.bq|b.bk;
-    b.wpcs=b.wp|b.wr|b.wn|b.wb|b.wq|b.wk;
-    b.pieces=b.bpcs|b.wpcs;
 }
 
 inline void MovePiece(Move& mv, chess& b){
-    switch(b.turn){
-        case true:
-            return MovePieceWhite(mv,b);
-        case false:
-            return MovePieceBlack(mv,b);
-    }
+    if(b.turn) MoveWhitePiece(mv,b);
+    else       MoveBlackPiece(mv,b);
+    
+    b.turn = !b.turn;
+    b.bpcs = b.bp|b.br|b.bn|b.bb|b.bq|b.bk;
+    b.wpcs = b.wp|b.wr|b.wn|b.wb|b.wq|b.wk;
+    b.pieces = b.bpcs|b.wpcs;
 }
 
 inline void UnMoveWhite(const Move mv, chess &b){
@@ -195,12 +208,28 @@ inline void UnMoveWhite(const Move mv, chess &b){
             break;
         case 3:
             b.wr = (b.wr & ~to) | f;
+            b.WCastleKing = (mv >> 21) & 8;
+            b.WCastleQueen = (mv >> 21) & 4;
+            b.BCastleKing = (mv >> 21) & 2;
+            b.BCastleQueen = (mv >> 21) & 1;
             break;
         case 4:
             b.wq = (b.wq & ~to) | f;
             break;
         case 5:
             b.wk = (b.wk & ~to) | f;
+
+            // Castle
+            if (ctz(f) == 3){
+                // Kingside
+                if (ctz(to) == 1 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 2)) | (1ULL << 0);
+                //Queen
+                else if (ctz(to) == 5 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 4)) | (1ULL << 7);
+            }
+            b.WCastleKing = (mv >> 21) & 8;
+            b.WCastleQueen = (mv >> 21) & 4;
+            b.BCastleKing = (mv >> 21) & 2;
+            b.BCastleQueen = (mv >> 21) & 1;
             break;
     }
      
@@ -260,12 +289,28 @@ inline void UnMoveBlack(const Move mv, chess &b){
             break;
         case 3:
             b.br = (b.br & ~to) | f;
+            b.WCastleKing = (mv >> 21) & 8;
+            b.WCastleQueen = (mv >> 21) & 4;
+            b.BCastleKing = (mv >> 21) & 2;
+            b.BCastleQueen = (mv >> 21) & 1;
             break;
         case 4:
             b.bq = (b.bq & ~to) | f;
             break;
         case 5:
             b.bk = (b.bk & ~to) | f;
+
+            // Castle
+            if (ctz(f) == 59){
+                // Kingside
+                if (ctz(to) == 57 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 58)) | (1ULL << 56);
+                //Queen
+                else if (ctz(to) == 61 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 60)) | (1ULL << 63);
+            }
+            b.WCastleKing = (mv >> 21) & 8;
+            b.WCastleQueen = (mv >> 21) & 4;
+            b.BCastleKing = (mv >> 21) & 2;
+            b.BCastleQueen = (mv >> 21) & 1;
             break;
     }
      
