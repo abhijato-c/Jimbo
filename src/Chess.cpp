@@ -38,39 +38,56 @@ int main(){
     cout << "Generating lookup tables, hold tight..." << endl;
     GenerateLookupTables();
 
-    string line, command;
+    string line;
     chess brd;
+    ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);
 
     cout << "Jimbo ready and accepting commands!" << endl;
     cout << "Please use this binary in your chess GUI/Lichess bot, or see how to write UCI commands." << endl;
 
     while (getline(cin, line)) {
+        StopSearch();
+
         // Split the command
         vector<string> command = {};
         istringstream stream(line);
         string token;
-        while (getline(stream, token, ' ')) {
-            command.push_back(token);
-        }
-
+        while (getline(stream, token, ' ')) {command.push_back(token);}
         string cmd = command[0];
-        StopSearch();
 
         if (cmd == "uci") {cout << "uciok" << endl;} 
         else if (cmd == "isready") {cout << "readyok" << endl;} 
         else if (cmd == "position") {
             string sub = command[1];
-
-            if (sub == "startpos") {ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);} 
+            int StartInd = -1;
+            
+            if (sub == "startpos") {
+                ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);
+                for (int i = 2; i < (int)command.size(); ++i){
+                    if (command[i] == "moves") {
+                        StartInd = i+1;
+                        break;
+                    }
+                }
+            }
             else if (sub == "fen") {
+                int i = 2;
                 string fenStr = "";
-                for (int i = 2; i < (int)command.size(); ++i){fenStr += command[i] + " ";}
+
+                for (; i < (int)command.size() && command[i] != "moves"; ++i) fenStr += command[i] + " ";
                 ParseFEN(fenStr, brd);
+                if (i < (int)command.size() && command[i] == "moves")
+                    StartInd = i + 1;
             }
-            else if (sub == "moves"){
-                cout << "Moves command currently not supported, please try fen or startpos!" << endl;
+            else {
+                cout << "Illegal subcommand " << sub << "!" << endl;
+                continue;
             }
-            else { cout << "Illegal subcommand " << sub << "!" << endl; }
+            
+            for (int i = StartInd; StartInd >= 0 && i < (int)command.size(); ++i) {
+                Move m = StrToMove(command[i], brd);
+                MovePiece(m, brd);
+            }
         } 
         else if (cmd == "go") {
             string sub;
@@ -117,11 +134,7 @@ int main(){
             // ignore
         }
         else if (cmd == "stop") {
-            // search already stopped when input arrived, can ignore.
-        }
-        else if (cmd == "profile") {
-            StopSignal = false;
-            profile();
+            // search already stopped when input arrived, ignore.
         }
         else if (cmd == "quit") { break; }
         else { cout << "Illegal command " << cmd << "!" << endl;}

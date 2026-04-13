@@ -5,7 +5,6 @@
 #include <sstream>
 
 inline int StaticEval(const chess &b){
-    ++nodes;
     if (b.turn)
         return ((popcnt(b.wb)*4) + (popcnt(b.wn)*3) + (popcnt(b.wp)) + (popcnt(b.wq)*9) + (popcnt(b.wr)*5) -
                 (popcnt(b.bb)*4) - (popcnt(b.bn)*3) - (popcnt(b.bp)) - (popcnt(b.bq)*9) - (popcnt(b.br)*5));
@@ -26,14 +25,10 @@ inline string MoveToStr(const Move move){
 
     if (prom > 0){
         switch(prom){
-            case 1:
-                MoveStr += 'n';break;
-            case 2:
-                MoveStr += 'b';break;
-            case 3:
-                MoveStr += 'r';break;
-            case 4:
-                MoveStr += 'q';break;
+            case 1: MoveStr += 'n'; break;
+            case 2: MoveStr += 'b'; break;
+            case 3: MoveStr += 'r'; break;
+            case 4: MoveStr += 'q'; break;
         }
     }
     return MoveStr;
@@ -77,10 +72,8 @@ inline Move StrToMove(const string MoveStr, chess& b){
     else if ((b.wq | b.bq) & (1ULL << to)) capPc = 5;
     else if ((b.wk | b.bk) & (1ULL << to)) capPc = 6;
 
-    // En passant detection: pawn moves diagonally to an empty square
-    if (fromPc == 0 && FromFile != ToFile && capPc == 0) {
-        capPc = 7;
-    }
+    // En passant detection
+    if (fromPc == 0 && FromFile != ToFile && capPc == 0)  capPc = 7;
     
     return (capPc << 18) | (fromPc << 15) | (prom << 12) | (to << 6) | from;
 }
@@ -97,10 +90,12 @@ inline void ParseFEN(string FullFEN, chess &b){
     string fen = segments[0];
     string plr = segments[1];
     string CastleRights = segments[2];
+    string epSquare = segments[3];
     
     // Reset board
     b.wp=0ULL; b.wr=0ULL; b.wn=0ULL; b.wb=0ULL; b.wq=0ULL; b.wk=0ULL;
     b.bp=0ULL; b.br=0ULL; b.bn=0ULL; b.bb=0ULL; b.bq=0ULL; b.bk=0ULL;
+    b.ep = -1;
     b.WCastleKing = false; b.WCastleQueen = false; b.BCastleKing = false; b.BCastleQueen = false;
 
     // Set turn
@@ -115,40 +110,32 @@ inline void ParseFEN(string FullFEN, chess &b){
         else if (c == 'q') b.BCastleQueen = true;
     }
 
+    // Ep square
+    if (epSquare != "-")
+        b.ep = (epSquare[1] - '1') * 8 + (7 - (epSquare[0] - 'a'));
+
     // Piece arrangement
     for (char c : fen) {
         if (isdigit(c)) {
-            b.wp<<=c-'0'; b.wr<<=c-'0'; b.wn<<=c-'0'; b.wb<<=c-'0'; b.wq<<=c-'0'; b.wk<<=c-'0';
-            b.bp<<=c-'0'; b.br<<=c-'0'; b.bn<<=c-'0'; b.bb<<=c-'0'; b.bq<<=c-'0'; b.bk<<=c-'0';
+            b.wp <<= c-'0'; b.wr <<= c-'0'; b.wn <<= c-'0'; b.wb <<= c-'0'; b.wq <<= c-'0'; b.wk <<= c-'0';
+            b.bp <<= c-'0'; b.br <<= c-'0'; b.bn <<= c-'0'; b.bb <<= c-'0'; b.bq <<= c-'0'; b.bk <<= c-'0';
         }
-        else if (c!='/'){
-            b.wp<<=1; b.wr<<=1; b.wn<<=1; b.wb<<=1; b.wq<<=1; b.wk<<=1;
-            b.bp<<=1; b.br<<=1; b.bn<<=1; b.bb<<=1; b.bq<<=1; b.bk<<=1;
+        else if (c != '/'){
+            b.wp <<= 1; b.wr <<= 1; b.wn <<= 1; b.wb <<= 1; b.wq <<= 1; b.wk <<= 1;
+            b.bp <<= 1; b.br <<= 1; b.bn <<= 1; b.bb <<= 1; b.bq <<= 1; b.bk <<= 1;
             switch(c){
-                case 'p':
-                    b.bp+=1; break;
-                case 'n':
-                    b.bn+=1; break;
-                case 'b':
-                    b.bb+=1; break;
-                case 'r':
-                    b.br+=1; break;
-                case 'q':
-                    b.bq+=1; break;
-                case 'P':
-                    b.wp+=1; break;
-                case 'N':
-                    b.wn+=1; break;
-                case 'B':
-                    b.wb+=1; break;
-                case 'R':
-                    b.wr+=1; break;
-                case 'Q':
-                    b.wq+=1; break;
-                case 'k':
-                    b.bk+=1; break;
-                case 'K':
-                    b.wk+=1; break;
+                case 'p': b.bp += 1; break;
+                case 'n': b.bn += 1; break;
+                case 'b': b.bb += 1; break;
+                case 'r': b.br += 1; break;
+                case 'q': b.bq += 1; break;
+                case 'P': b.wp += 1; break;
+                case 'N': b.wn += 1; break;
+                case 'B': b.wb += 1; break;
+                case 'R': b.wr += 1; break;
+                case 'Q': b.wq += 1; break;
+                case 'k': b.bk += 1; break;
+                case 'K': b.wk += 1; break;
             }
         }
     }
