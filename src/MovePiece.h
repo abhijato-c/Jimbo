@@ -35,14 +35,8 @@ inline void MoveWhitePiece(Move& mv, chess& b){
         }
 
         // Remove castle rights
-        if (to == (1ULL << 0))
-            b.WCastleKing  = false;
-        else if (to == (1ULL << 7)) 
-            b.WCastleQueen = false;
-        else if (to == (1ULL << 3)){
-            b.WCastleKing = false;
-            b.WCastleQueen = false;
-        }
+        if (to == (1ULL << 56)) b.BCastleKing  = false;
+        else if (to == (1ULL << 63)) b.BCastleQueen = false;
     }
 
     // Move piece
@@ -126,14 +120,8 @@ inline void MoveBlackPiece(Move& mv, chess& b){
         }
 
         // Remove castle rights
-        if (to == (1ULL << 56))
-            b.BCastleKing  = false;
-        else if (to == (1ULL << 63)) 
-            b.BCastleQueen = false;
-        else if (to == (1ULL << 59)){
-            b.BCastleKing = false;
-            b.BCastleQueen = false;
-        }
+        if (to == (1ULL << 0)) b.WCastleKing  = false;
+        else if (to == (1ULL << 7)) b.WCastleQueen = false;
     }
 
     // Move piece
