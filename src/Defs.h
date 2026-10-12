@@ -34,7 +34,7 @@ Move encoding
 */
 
 extern atomic<bool> StopSignal;
-constexpr int inf = 300000;
+constexpr int MATE_BOUND = INT_MAX - 1000;
 
 constexpr Bitboard clear_a=9187201950435737471ULL;
 constexpr Bitboard clear_b=13816973012072644543ULL;
