@@ -12,6 +12,47 @@ inline int StaticEval(const chess &b){
             (popcnt(b.wb)*4) - (popcnt(b.wn)*3) - (popcnt(b.wp)) - (popcnt(b.wq)*9) - (popcnt(b.wr)*5));
 }
 
+inline bool IsAttacked(const chess &b, int sq, bool byWhite){
+    const Bitboard sqBB = 1ULL << sq;
+
+    const Bitboard KnightAtt =
+        ((sqBB & clear_h & clear_g) >> 6) | ((sqBB & clear_h) >> 15) |
+        ((sqBB & clear_a) >> 17)          | ((sqBB & clear_a & clear_b) >> 10) |
+        ((sqBB & clear_a & clear_b) << 6) | ((sqBB & clear_a) << 15) |
+        ((sqBB & clear_h) << 17)          | ((sqBB & clear_h & clear_g) << 10);
+
+    const Bitboard KingAtt =
+        ((sqBB & clear_a) << 7) | (sqBB << 8) | ((sqBB & clear_h) << 9) |
+        ((sqBB & clear_h) << 1) | ((sqBB & clear_h) >> 7) | (sqBB >> 8) |
+        ((sqBB & clear_a) >> 9) | ((sqBB & clear_a) >> 1);
+
+    #ifdef USE_BMI2
+        const Bitboard diag = BishopMovesLookup[sq][pext(b.pieces, BishopBlockers[sq])];
+        const Bitboard orth = RookMovesLookup[sq][pext(b.pieces, RookBlockers[sq])];
+    #else
+        const Bitboard diag = BishopMovesLookup[sq][
+            ((b.pieces & BishopBlockers[sq]) * BishopMagics[sq]) >> BishopShifts[sq]];
+        const Bitboard orth = RookMovesLookup[sq][
+            ((b.pieces & RookBlockers[sq])   * RookMagics[sq])   >> RookShifts[sq]];
+    #endif
+ 
+    if (byWhite){
+        if (b.wp & (((sqBB & clear_h) >> 7) | ((sqBB & clear_a) >> 9))) return true;
+        if (b.wn & KnightAtt)               return true;
+        if ((b.wb | b.wq) & diag)    return true;
+        if ((b.wr | b.wq) & orth)    return true;
+        if (b.wk & KingAtt)         return true;
+    } 
+    else {
+        if (b.bp & (((sqBB & clear_a) << 7) | ((sqBB & clear_h) << 9))) return true;
+        if (b.bn & KnightAtt)               return true;
+        if ((b.bb | b.bq) & diag)    return true;
+        if ((b.br | b.bq) & orth)    return true;
+        if (b.bk & KingAtt)         return true;
+    }
+    return false;
+}
+
 inline string MoveToStr(const Move move){
     int from = (move & 63);
     int to = ((move>>6) & 63);
