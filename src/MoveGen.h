@@ -7,15 +7,15 @@ inline bool IsAttacked(const chess &b, int sq, bool byWhite){
     const Bitboard sqBB = 1ULL << sq;
 
     const Bitboard KnightAtt =
-        ((sqBB & clear_a & clear_b) >> 6) | ((sqBB & clear_a) >> 15) |
-        ((sqBB & clear_h) >> 17)          | ((sqBB & clear_h & clear_g) >> 10) |
-        ((sqBB & clear_h & clear_g) << 6) | ((sqBB & clear_h) << 15) |
-        ((sqBB & clear_a) << 17)          | ((sqBB & clear_a & clear_b) << 10);
+        ((sqBB & clear_h & clear_g) >> 6) | ((sqBB & clear_h) >> 15) |
+        ((sqBB & clear_a) >> 17)          | ((sqBB & clear_a & clear_b) >> 10) |
+        ((sqBB & clear_a & clear_b) << 6) | ((sqBB & clear_a) << 15) |
+        ((sqBB & clear_h) << 17)          | ((sqBB & clear_h & clear_g) << 10);
 
     const Bitboard KingAtt =
-        ((sqBB & clear_h) << 7) | (sqBB << 8) | ((sqBB & clear_a) << 9) |
-        ((sqBB & clear_a) << 1) | ((sqBB & clear_a) >> 7) | (sqBB >> 8) |
-        ((sqBB & clear_h) >> 9) | ((sqBB & clear_h) >> 1);
+        ((sqBB & clear_a) << 7) | (sqBB << 8) | ((sqBB & clear_h) << 9) |
+        ((sqBB & clear_h) << 1) | ((sqBB & clear_h) >> 7) | (sqBB >> 8) |
+        ((sqBB & clear_a) >> 9) | ((sqBB & clear_a) >> 1);
 
     #ifdef USE_BMI2
         const Bitboard diag = BishopMovesLookup[sq][pext(b.pieces, BishopBlockers[sq])];
@@ -28,14 +28,14 @@ inline bool IsAttacked(const chess &b, int sq, bool byWhite){
     #endif
  
     if (byWhite){
-        if (b.wp & (((sqBB & clear_a) >> 7) | ((sqBB & clear_h) >> 9))) return true;
+        if (b.wp & (((sqBB & clear_h) >> 7) | ((sqBB & clear_a) >> 9))) return true;
         if (b.wn & KnightAtt)               return true;
         if ((b.wb | b.wq) & diag)    return true;
         if ((b.wr | b.wq) & orth)    return true;
         if (b.wk & KingAtt)         return true;
     } 
     else {
-        if (b.bp & (((sqBB & clear_h) << 7) | ((sqBB & clear_a) << 9))) return true;
+        if (b.bp & (((sqBB & clear_a) << 7) | ((sqBB & clear_h) << 9))) return true;
         if (b.bn & KnightAtt)               return true;
         if ((b.bb | b.bq) & diag)    return true;
         if ((b.br | b.bq) & orth)    return true;
@@ -47,80 +47,80 @@ inline bool IsAttacked(const chess &b, int sq, bool byWhite){
 inline void WKmoves(const chess &b, MoveList &Moves){
     int i = ctz(b.wk);
     
-    if ((((1ULL << i) & clear_h) << 7) &~ b.wpcs)
+    if ((((1ULL << i) & clear_a) << 7) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 7) << 6 | i);
     if (((1ULL << i) << 8) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 8) << 6 | i);
-    if ((((1ULL << i) & clear_a) << 9) &~ b.wpcs)
+    if ((((1ULL << i) & clear_h) << 9) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 9) << 6 | i);
-    if ((((1ULL << i) & clear_a) << 1) &~ b.wpcs)
+    if ((((1ULL << i) & clear_h) << 1) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 1) << 6 | i);
-    if ((((1ULL << i) & clear_a) >> 7) &~ b.wpcs)
+    if ((((1ULL << i) & clear_h) >> 7) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 7) << 6 | i);
     if (((1ULL << i) >> 8) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 8) << 6 | i);
-    if ((((1ULL << i) & clear_h) >> 9) &~ b.wpcs)
+    if ((((1ULL << i) & clear_a) >> 9) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 9) << 6 | i);
-    if ((((1ULL << i) & clear_h) >> 1) &~ b.wpcs)
+    if ((((1ULL << i) & clear_a) >> 1) &~ b.wpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 1) << 6 | i);
     
     // Kingside Castling
     if (b.WCastleKing  &&
-        !(b.pieces & ((1ULL<<2)|(1ULL<<1))) &&
-        !IsAttacked(b, 3, false) &&
-        !IsAttacked(b, 2, false) &&
-        !IsAttacked(b, 1, false))
+        !(b.pieces & ((1ULL<<5)|(1ULL<<6))) &&
+        !IsAttacked(b, 4, false) &&
+        !IsAttacked(b, 5, false) &&
+        !IsAttacked(b, 6, false))
     {
-        Moves.push_back((5<<15) | (1<<6) | 3);
+        Moves.push_back((5<<15) | (6<<6) | 4);
     }
     // Queenside
     if (b.WCastleQueen &&
-        !(b.pieces & ((1ULL<<4)|(1ULL<<5)|(1ULL<<6))) &&
-        !IsAttacked(b, 3, false) &&
+        !(b.pieces & ((1ULL<<3)|(1ULL<<2)|(1ULL<<1))) &&
         !IsAttacked(b, 4, false) &&
-        !IsAttacked(b, 5, false))
+        !IsAttacked(b, 3, false) &&
+        !IsAttacked(b, 2, false))
     {
-        Moves.push_back((5<<15) | (5<<6) | 3);
+        Moves.push_back((5<<15) | (2<<6) | 4);
     }
 }
 
 inline void BKmoves(const chess &b, MoveList &Moves){
     int i = ctz(b.bk);
 
-    if ((((1ULL << i) & clear_h) << 7) &~ b.bpcs)
+    if ((((1ULL << i) & clear_a) << 7) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 7) << 6 | i);
     if (((1ULL << i) << 8) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 8) << 6 | i);
-    if ((((1ULL << i) & clear_a) << 9) &~ b.bpcs)
+    if ((((1ULL << i) & clear_h) << 9) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 9) << 6 | i);
-    if ((((1ULL << i) & clear_a) << 1) &~ b.bpcs)
+    if ((((1ULL << i) & clear_h) << 1) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) << 1) << 6 | i);
-    if ((((1ULL << i) & clear_a) >> 7) &~ b.bpcs)
+    if ((((1ULL << i) & clear_h) >> 7) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 7) << 6 | i);
     if (((1ULL << i) >> 8) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 8) << 6 | i);
-    if ((((1ULL << i) & clear_h) >> 9) &~ b.bpcs)
+    if ((((1ULL << i) & clear_a) >> 9) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 9) << 6 | i);
-    if ((((1ULL << i) & clear_h) >> 1) &~ b.bpcs)
+    if ((((1ULL << i) & clear_a) >> 1) &~ b.bpcs)
         Moves.push_back((5 << 15) | ctz((1ULL << i) >> 1) << 6 | i);
     
     // Kingside
     if (b.BCastleKing  &&
-        !(b.pieces & ((1ULL<<58)|(1ULL<<57))) &&
-        !IsAttacked(b, 59, true) &&
-        !IsAttacked(b, 58, true) &&
-        !IsAttacked(b, 57, true))
+        !(b.pieces & ((1ULL<<61)|(1ULL<<62))) &&
+        !IsAttacked(b, 60, true) &&
+        !IsAttacked(b, 61, true) &&
+        !IsAttacked(b, 62, true))
     {
-        Moves.push_back((5<<15)|(57<<6)|59);
+        Moves.push_back((5<<15)|(62<<6)|60);
     }
     // Queenside
     if (b.BCastleQueen &&
-        !(b.pieces & ((1ULL<<60)|(1ULL<<61)|(1ULL<<62))) &&
-        !IsAttacked(b, 59, true) &&
+        !(b.pieces & ((1ULL<<59)|(1ULL<<58)|(1ULL<<57))) &&
         !IsAttacked(b, 60, true) &&
-        !IsAttacked(b, 61, true))
+        !IsAttacked(b, 59, true) &&
+        !IsAttacked(b, 58, true))
     {
-        Moves.push_back((5<<15)|(61<<6)|59);
+        Moves.push_back((5<<15)|(58<<6)|60);
     }
 }
 
@@ -131,21 +131,21 @@ inline void WNmoves(const chess &b, MoveList &Moves){
         i = ctz(iter);
         iter = blsr(iter);
 
-        if ((((1ULL << i) & clear_a & clear_b) >> 6) &~ b.wpcs)
+        if ((((1ULL << i) & clear_h & clear_g) >> 6) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 6) << 6 | i);
-        if ((((1ULL << i) & clear_a) >> 15) &~ b.wpcs)
+        if ((((1ULL << i) & clear_h) >> 15) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 15) << 6 | i);
-        if ((((1ULL << i) & clear_h) >> 17) &~ b.wpcs)
+        if ((((1ULL << i) & clear_a) >> 17) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 17) << 6 | i);
-        if ((((1ULL << i) & clear_h & clear_g) >> 10) &~ b.wpcs)
+        if ((((1ULL << i) & clear_a & clear_b) >> 10) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 10) << 6 | i);
-        if ((((1ULL << i) & clear_h & clear_g) << 6) &~ b.wpcs)
+        if ((((1ULL << i) & clear_a & clear_b) << 6) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 6) << 6 | i);
-        if ((((1ULL << i) & clear_h) << 15) &~ b.wpcs)
+        if ((((1ULL << i) & clear_a) << 15) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 15) << 6 | i);
-        if ((((1ULL << i) & clear_a) << 17) &~ b.wpcs)
+        if ((((1ULL << i) & clear_h) << 17) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 17) << 6 | i);
-        if ((((1ULL << i) & clear_a & clear_b) << 10) &~ b.wpcs)
+        if ((((1ULL << i) & clear_h & clear_g) << 10) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 10) << 6 | i);
     }
 }
@@ -157,21 +157,21 @@ inline void BNmoves(const chess &b, MoveList &Moves){
         i = ctz(iter);
         iter = blsr(iter);
 
-        if ((((1ULL << i) & clear_a & clear_b) >> 6) &~ b.bpcs)
+        if ((((1ULL << i) & clear_h & clear_g) >> 6) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 6) << 6 | i);
-        if ((((1ULL << i) & clear_a) >> 15) &~ b.bpcs)
+        if ((((1ULL << i) & clear_h) >> 15) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 15) << 6 | i);
-        if ((((1ULL << i) & clear_h) >> 17) &~ b.bpcs)
+        if ((((1ULL << i) & clear_a) >> 17) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 17) << 6 | i);
-        if ((((1ULL << i) & clear_h & clear_g) >> 10) &~ b.bpcs)
+        if ((((1ULL << i) & clear_a & clear_b) >> 10) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 10) << 6 | i);
-        if ((((1ULL << i) & clear_h & clear_g) << 6) &~ b.bpcs)
+        if ((((1ULL << i) & clear_a & clear_b) << 6) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 6) << 6 | i);
-        if ((((1ULL << i) & clear_h) << 15) &~ b.bpcs)
+        if ((((1ULL << i) & clear_a) << 15) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 15) << 6 | i);
-        if ((((1ULL << i) & clear_a) << 17) &~ b.bpcs)
+        if ((((1ULL << i) & clear_h) << 17) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 17) << 6 | i);
-        if ((((1ULL << i) & clear_a & clear_b) << 10) &~ b.bpcs)
+        if ((((1ULL << i) & clear_h & clear_g) << 10) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) << 10) << 6 | i);
     }
 }
@@ -194,16 +194,16 @@ inline void WPmoves(const chess &b, MoveList &Moves){
             Moves.push_back(ctz(k << 16) << 6 | i);
         
         // Captures
-        if ((k << 7) & b.bpcs & clear_a)
+        if ((k << 7) & b.bpcs & clear_h)
             Moves.push_back(ctz(k << 7) << 6 | i);
-        if ((k << 9) & b.bpcs & clear_h)
+        if ((k << 9) & b.bpcs & clear_a)
             Moves.push_back(ctz(k << 9) << 6 | i);
         
         // En passant
         if (b.ep >= 0){
             const Bitboard ep = 1ULL << b.ep;
-            if ((k << 7) & ep & clear_a) Moves.push_back((7 << 18) | b.ep << 6 | i);
-            if ((k << 9) & ep & clear_h) Moves.push_back((7 << 18) | b.ep << 6 | i);
+            if ((k << 7) & ep & clear_h) Moves.push_back((7 << 18) | b.ep << 6 | i);
+            if ((k << 9) & ep & clear_a) Moves.push_back((7 << 18) | b.ep << 6 | i);
         }
     }
 }
@@ -227,16 +227,16 @@ inline void BPmoves(const chess &b, MoveList &Moves){
             Moves.push_back(ctz(k >> 16) << 6 | i);
         
         // Captures
-        if ((k >> 7) & b.wpcs & clear_h)
+        if ((k >> 7) & b.wpcs & clear_a)
             Moves.push_back(ctz(k >> 7) << 6 | i);
-        if ((k >> 9) & b.wpcs & clear_a)
+        if ((k >> 9) & b.wpcs & clear_h)
             Moves.push_back(ctz(k >> 9) << 6 | i);
         
         // En passant
         if (b.ep >= 0){
             const Bitboard ep = 1ULL << b.ep;
-            if ((k >> 7) & ep & clear_h) Moves.push_back((7 << 18) | b.ep << 6 | i);
-            if ((k >> 9) & ep & clear_a) Moves.push_back((7 << 18) | b.ep << 6 | i);
+            if ((k >> 7) & ep & clear_a) Moves.push_back((7 << 18) | b.ep << 6 | i);
+            if ((k >> 9) & ep & clear_h) Moves.push_back((7 << 18) | b.ep << 6 | i);
         }
     }
 }
@@ -410,7 +410,7 @@ inline MoveList WhiteMoves(const chess &b){
         }
     }
 
-    v = b.wp & mask_7 & clear_h;
+    v = b.wp & mask_7 & clear_a;
     while(v){
         i = ctz(v);
         v = blsr(v);
@@ -422,7 +422,7 @@ inline MoveList WhiteMoves(const chess &b){
         }
     }
 
-    v = b.wp & mask_7 & clear_a;
+    v = b.wp & mask_7 & clear_h;
     while(v){
         i = ctz(v);
         v = blsr(v);
@@ -461,7 +461,7 @@ inline MoveList BlackMoves(const chess &b){
         }
     }
 
-    v = b.bp & mask_2 & clear_a;
+    v = b.bp & mask_2 & clear_h;
     while(v){
         i = ctz(v);
         v = blsr(v);
@@ -473,7 +473,7 @@ inline MoveList BlackMoves(const chess &b){
         }
     }
 
-    v = b.bp&mask_2&clear_h;
+    v = b.bp&mask_2&clear_a;
     while(v){
         i = ctz(v);
         v = blsr(v);

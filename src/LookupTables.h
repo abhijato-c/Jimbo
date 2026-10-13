@@ -23,17 +23,17 @@ inline Bitboard ComputeRookMoves(Bitboard piece, Bitboard blockers){
         }
     }
     loc=piece<<1;
-    if((loc&clear_h)!=0){
+    if((loc&clear_a)!=0){
         moves|=loc;
-        while (((loc&blockers)==0) && ((loc&clear_a)!=0)){
+        while (((loc&blockers)==0) && ((loc&clear_h)!=0)){
             loc <<= 1;
             moves |= loc;
         }
     }
     loc = piece>>1;
-    if((loc & clear_a) != 0){
+    if((loc & clear_h) != 0){
         moves |= loc;
-        while (((loc & blockers) == 0) && ((loc & clear_h) != 0)){
+        while (((loc & blockers) == 0) && ((loc & clear_a) != 0)){
             loc >>= 1;
             moves |= loc;
         }
@@ -44,33 +44,33 @@ inline Bitboard ComputeRookMoves(Bitboard piece, Bitboard blockers){
 inline Bitboard ComputeBishopMoves(Bitboard piece, Bitboard blockers){
     Bitboard moves = 0;
     Bitboard loc = piece << 9;
-    if((loc&clear_h)!=0){
+    if((loc&clear_a)!=0){
         moves|=loc;
-        while (((loc&blockers)==0) && (loc&clear_a)!=0){
+        while (((loc&blockers)==0) && (loc&clear_h)!=0){
             loc <<= 9;
             moves |= loc;
         }
     }
     loc=piece<<7;
-    if((loc&clear_a)!=0){
+    if((loc&clear_h)!=0){
         moves|=loc;
-        while (((loc&blockers)==0) && (loc&clear_h)!=0){
+        while (((loc&blockers)==0) && (loc&clear_a)!=0){
             loc <<= 7;
             moves |= loc;
         }
     }
     loc=piece>>7;
-    if((loc&clear_h)!=0){
+    if((loc&clear_a)!=0){
         moves|=loc;
-        while (((loc&blockers)==0) && ((loc&clear_a)!=0)){
+        while (((loc&blockers)==0) && ((loc&clear_h)!=0)){
             loc >>= 7;
             moves |= loc;
         }
     }
     loc=piece>>9;
-    if((loc&clear_a)!=0){
+    if((loc&clear_h)!=0){
         moves|=loc;
-        while (((loc&blockers)==0) && ((loc&clear_h)!=0)){
+        while (((loc&blockers)==0) && ((loc&clear_a)!=0)){
             loc >>= 9;
             moves |= loc;
         }
@@ -91,12 +91,12 @@ inline Bitboard ComputeRookBlockers(Bitboard piece){
         loc >>= 8;
     }
     loc=piece;
-    while ((loc&clear_h)!=0){
+    while ((loc&clear_a)!=0){
         side |= loc;
         loc >>= 1;
     }
     loc=piece;
-    while ((loc&clear_a)!=0){
+    while ((loc&clear_h)!=0){
         side |= loc;
         loc <<= 1;
     }
@@ -107,22 +107,22 @@ inline Bitboard ComputeRookBlockers(Bitboard piece){
 inline Bitboard ComputeBishopBlockers(Bitboard piece){
     Bitboard side=0;
     Bitboard loc=piece;
-    while ((loc&clear_a&clear_8)!=0){
+    while ((loc&clear_h&clear_8)!=0){
         side |= loc;
         loc <<= 9;
     }
     loc=piece;
-    while ((loc&clear_h&clear_8)!=0){
+    while ((loc&clear_a&clear_8)!=0){
         side |= loc;
         loc <<=7;
     }
     loc=piece;
-    while ((loc&clear_a&clear_1)!=0){
+    while ((loc&clear_h&clear_1)!=0){
         side |= loc;
         loc >>= 7;
     }
     loc=piece;
-    while ((loc&clear_h&clear_1)!=0){
+    while ((loc&clear_a&clear_1)!=0){
         side |= loc;
         loc >>= 9;
     }

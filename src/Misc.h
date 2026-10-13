@@ -18,9 +18,9 @@ inline string MoveToStr(const Move move){
     int prom = ((move>>12) & 7);
     string MoveStr = "";
 
-    MoveStr += (7 - from%8) + 'a'; // From file
+    MoveStr += (from%8)     + 'a'; // From file
     MoveStr += (from/8)     + '1'; // From rank
-    MoveStr += (7 - to%8)   + 'a'; // To file
+    MoveStr += (to%8)       + 'a'; // To file
     MoveStr += (to/8)       + '1'; // To rank
 
     if (prom > 0){
@@ -40,8 +40,8 @@ inline Move StrToMove(const string MoveStr, chess& b){
     int ToFile   = MoveStr[2] - 'a';
     int ToRank   = MoveStr[3] - '1';
 
-    uint32_t from = (7 - FromFile) + (FromRank * 8);
-    uint32_t to = (7 - ToFile) + (ToRank * 8);
+    uint32_t from = FromFile + (FromRank * 8);
+    uint32_t to = ToFile + (ToRank * 8);
     uint32_t prom = 0;
     uint32_t fromPc = 0;
     uint32_t capPc = 0;
@@ -112,30 +112,29 @@ inline void ParseFEN(string FullFEN, chess &b){
 
     // Ep square
     if (epSquare != "-")
-        b.ep = (epSquare[1] - '1') * 8 + (7 - (epSquare[0] - 'a'));
+        b.ep = (epSquare[1] - '1') * 8 + (epSquare[0] - 'a');
 
-    // Piece arrangement
+    // Piece arrangement (a1 = 0, b1 = 1, ... h1 = 7, a2 = 8, ... h8 = 63)
+    int rank = 7, file = 0;
     for (char c : fen) {
-        if (isdigit(c)) {
-            b.wp <<= c-'0'; b.wr <<= c-'0'; b.wn <<= c-'0'; b.wb <<= c-'0'; b.wq <<= c-'0'; b.wk <<= c-'0';
-            b.bp <<= c-'0'; b.br <<= c-'0'; b.bn <<= c-'0'; b.bb <<= c-'0'; b.bq <<= c-'0'; b.bk <<= c-'0';
-        }
-        else if (c != '/'){
-            b.wp <<= 1; b.wr <<= 1; b.wn <<= 1; b.wb <<= 1; b.wq <<= 1; b.wk <<= 1;
-            b.bp <<= 1; b.br <<= 1; b.bn <<= 1; b.bb <<= 1; b.bq <<= 1; b.bk <<= 1;
+        if (c == '/')        { --rank; file = 0; }
+        else if (isdigit(c)) { file += c - '0'; }
+        else {
+            const Bitboard sq = 1ULL << (rank * 8 + file);
+            ++file;
             switch(c){
-                case 'p': b.bp += 1; break;
-                case 'n': b.bn += 1; break;
-                case 'b': b.bb += 1; break;
-                case 'r': b.br += 1; break;
-                case 'q': b.bq += 1; break;
-                case 'P': b.wp += 1; break;
-                case 'N': b.wn += 1; break;
-                case 'B': b.wb += 1; break;
-                case 'R': b.wr += 1; break;
-                case 'Q': b.wq += 1; break;
-                case 'k': b.bk += 1; break;
-                case 'K': b.wk += 1; break;
+                case 'p': b.bp |= sq; break;
+                case 'n': b.bn |= sq; break;
+                case 'b': b.bb |= sq; break;
+                case 'r': b.br |= sq; break;
+                case 'q': b.bq |= sq; break;
+                case 'k': b.bk |= sq; break;
+                case 'P': b.wp |= sq; break;
+                case 'N': b.wn |= sq; break;
+                case 'B': b.wb |= sq; break;
+                case 'R': b.wr |= sq; break;
+                case 'Q': b.wq |= sq; break;
+                case 'K': b.wk |= sq; break;
             }
         }
     }

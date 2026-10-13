@@ -36,23 +36,23 @@ Move encoding
 extern atomic<bool> StopSignal;
 constexpr int MATE_BOUND = INT_MAX - 1000;
 
-constexpr Bitboard clear_a=9187201950435737471ULL;
-constexpr Bitboard clear_b=13816973012072644543ULL;
-//constexpr Bitboard clear_c=16131858542891098079ULL;
-//constexpr Bitboard clear_d=17289301308300324847ULL;
-//constexpr Bitboard clear_e=17868022691004938231ULL;
-//constexpr Bitboard clear_f=18157383382357244923ULL;
-constexpr Bitboard clear_g=18302063728033398269ULL;
-constexpr Bitboard clear_h=18374403900871474942ULL;
+constexpr Bitboard clear_a=18374403900871474942ULL;
+constexpr Bitboard clear_b=18302063728033398269ULL;
+//constexpr Bitboard clear_c=18157383382357244923ULL;
+//constexpr Bitboard clear_d=17868022691004938231ULL;
+//constexpr Bitboard clear_e=17289301308300324847ULL;
+//constexpr Bitboard clear_f=16131858542891098079ULL;
+constexpr Bitboard clear_g=13816973012072644543ULL;
+constexpr Bitboard clear_h=9187201950435737471ULL;
 
-//constexpr Bitboard mask_a=9259542123273814144ULL;
-//constexpr Bitboard mask_b=4629771061636907072ULL;
-//constexpr Bitboard mask_c=2314885530818453536ULL;
-//constexpr Bitboard mask_d=1157442765409226768ULL;
-//constexpr Bitboard mask_e=578721382704613384ULL;
-//constexpr Bitboard mask_f=289360691352306692ULL;
-//constexpr Bitboard mask_g=144680345676153346ULL;
-//constexpr Bitboard mask_h=72340172838076673ULL;
+//constexpr Bitboard mask_a=72340172838076673ULL;
+//constexpr Bitboard mask_b=144680345676153346ULL;
+//constexpr Bitboard mask_c=289360691352306692ULL;
+//constexpr Bitboard mask_d=578721382704613384ULL;
+//constexpr Bitboard mask_e=1157442765409226768ULL;
+//constexpr Bitboard mask_f=2314885530818453536ULL;
+//constexpr Bitboard mask_g=4629771061636907072ULL;
+//constexpr Bitboard mask_h=9259542123273814144ULL;
 
 constexpr Bitboard clear_8=72057594037927935ULL;
 //constexpr Bitboard clear_7=18374967954648334335ULL;

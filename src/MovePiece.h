@@ -35,8 +35,8 @@ inline void MoveWhitePiece(Move& mv, chess& b){
         }
 
         // Remove castle rights
-        if (to == (1ULL << 56)) b.BCastleKing  = false;
-        else if (to == (1ULL << 63)) b.BCastleQueen = false;
+        if (to == (1ULL << 63)) b.BCastleKing  = false;
+        else if (to == (1ULL << 56)) b.BCastleQueen = false;
     }
 
     // Move piece
@@ -58,8 +58,8 @@ inline void MoveWhitePiece(Move& mv, chess& b){
             break;
         case 3:
             b.wr = (b.wr & ~f) | to;
-            if ((mv & 63) == 0) b.WCastleKing = false;
-            else if ((mv & 63) == 7) b.WCastleQueen = false;
+            if ((mv & 63) == 7) b.WCastleKing = false;
+            else if ((mv & 63) == 0) b.WCastleQueen = false;
             break;
         case 4:
             b.wq = (b.wq & ~f) | to;
@@ -68,11 +68,11 @@ inline void MoveWhitePiece(Move& mv, chess& b){
             b.wk = (b.wk & ~f) | to;
 
             // Castle
-            if (ctz(f) == 3){
+            if (ctz(f) == 4){
                 // Kingside
-                if (ctz(to) == 1 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 0)) | (1ULL << 2);
+                if (ctz(to) == 6 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 7)) | (1ULL << 5);
                 //Queen
-                else if (ctz(to) == 5 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 7)) | (1ULL << 4);
+                else if (ctz(to) == 2 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 0)) | (1ULL << 3);
             }
             b.WCastleKing = false;
             b.WCastleQueen = false;
@@ -120,8 +120,8 @@ inline void MoveBlackPiece(Move& mv, chess& b){
         }
 
         // Remove castle rights
-        if (to == (1ULL << 0)) b.WCastleKing  = false;
-        else if (to == (1ULL << 7)) b.WCastleQueen = false;
+        if (to == (1ULL << 7)) b.WCastleKing  = false;
+        else if (to == (1ULL << 0)) b.WCastleQueen = false;
     }
 
     // Move piece
@@ -143,8 +143,8 @@ inline void MoveBlackPiece(Move& mv, chess& b){
             break;
         case 3:
             b.br = (b.br & ~f) | to;
-            if ((mv & 63) == 56) b.BCastleKing = false;
-            else if ((mv & 63) == 63) b.BCastleQueen = false;
+            if ((mv & 63) == 63) b.BCastleKing = false;
+            else if ((mv & 63) == 56) b.BCastleQueen = false;
             break;
         case 4:
             b.bq = (b.bq & ~f) | to;
@@ -153,11 +153,11 @@ inline void MoveBlackPiece(Move& mv, chess& b){
             b.bk = (b.bk & ~f) | to;
 
             // Castle
-            if (ctz(f) == 59){
+            if (ctz(f) == 60){
                 // Kingside
-                if (ctz(to) == 57 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 56)) | (1ULL << 58);
+                if (ctz(to) == 62 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 63)) | (1ULL << 61);
                 //Queen
-                else if (ctz(to) == 61 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 63)) | (1ULL << 60);
+                else if (ctz(to) == 58 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 56)) | (1ULL << 59);
             }
             b.BCastleKing = false;
             b.BCastleQueen = false;
@@ -202,11 +202,11 @@ inline void UnMoveWhite(const Move mv, chess &b){
             b.wk = (b.wk & ~to) | f;
 
             // Castle
-            if (ctz(f) == 3){
+            if (ctz(f) == 4){
                 // Kingside
-                if (ctz(to) == 1 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 2)) | (1ULL << 0);
+                if (ctz(to) == 6 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 5)) | (1ULL << 7);
                 //Queen
-                else if (ctz(to) == 5 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 4)) | (1ULL << 7);
+                else if (ctz(to) == 2 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 3)) | (1ULL << 0);
             }
             break;
     }
@@ -246,11 +246,11 @@ inline void UnMoveBlack(const Move mv, chess &b){
             b.bk = (b.bk & ~to) | f;
 
             // Castle
-            if (ctz(f) == 59){
+            if (ctz(f) == 60){
                 // Kingside
-                if (ctz(to) == 57 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 58)) | (1ULL << 56);
+                if (ctz(to) == 62 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 61)) | (1ULL << 63);
                 //Queen
-                else if (ctz(to) == 61 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 60)) | (1ULL << 63);
+                else if (ctz(to) == 58 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 59)) | (1ULL << 56);
             }
             break;
     }
