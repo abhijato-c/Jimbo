@@ -46,18 +46,24 @@ int main(){
     cout << "Please use this binary in your chess GUI/Lichess bot, or see how to write UCI commands." << endl;
 
     while (getline(cin, line)) {
-        StopSearch();
-
         // Split the command
         vector<string> command = {};
         istringstream stream(line);
         string token;
-        while (getline(stream, token, ' ')) {command.push_back(token);}
+        while (stream >> token) {command.push_back(token);}
+        if (command.empty()) continue;
         string cmd = command[0];
 
-        if (cmd == "uci") {cout << "uciok" << endl;} 
+        if (cmd == "uci") {
+            cout << "id name Jimbo" << endl;
+            cout << "id author abhijato-c" << endl;
+            cout << "uciok" << endl;
+        } 
         else if (cmd == "isready") {cout << "readyok" << endl;} 
         else if (cmd == "position") {
+            StopSearch();
+            if (command.size() < 2) continue;
+
             string sub = command[1];
             int StartInd = -1;
             
@@ -90,6 +96,8 @@ int main(){
             }
         } 
         else if (cmd == "go") {
+            StopSearch();
+
             string sub;
             int arg;
             bool Success = true;
@@ -127,6 +135,8 @@ int main(){
             SearchThread = thread(RunSearch, brd, TimeLimit, DepthLimit);
         }
         else if (cmd == "ucinewgame") {
+            StopSearch();
+            ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);
             // Clear Transposition Tables
         }
 
@@ -134,10 +144,15 @@ int main(){
             // ignore
         }
         else if (cmd == "stop") {
-            // search already stopped when input arrived, ignore.
+            StopSearch();
         }
-        else if (cmd == "quit") { break; }
-        else { cout << "Illegal command " << cmd << "!" << endl;}
+        else if (cmd == "quit") {
+            StopSearch();
+            break;
+        }
+        else {cout << "Illegal command " << cmd << "!" << endl;}
     }
+
+    StopSearch();
     return 0;
 }
