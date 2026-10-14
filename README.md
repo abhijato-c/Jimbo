@@ -1,10 +1,13 @@
-# Chess Engine & Lichess Bot
+# Jimbo - Chess Engine & Lichess Bot
 
-A C++, UCI-compatible chess engine featuring an Alpha-Beta pruning search with iterative deepening. This project includes a Python script to deploy the engine as a live bot on Lichess.
+![Banner](https://github.com/abhijato-c/Jimbo/blob/main/Banner.png)
+> A UCI chess ingine in C++ with a lichess bot wrapper.
 
-## Getting Started
+A C++, UCI-compatible chess engine featuring an Alpha-Beta pruning search with iterative deepening. Includes a Python script to deploy the engine as a Lichess Bot.
 
-### Compile engine locally
+---
+
+## Download/Setup
 
 You can download a binary from the releases to use. If you want to compile the engine locally for best performance, use the following command:
 
@@ -15,7 +18,9 @@ g++ -march=native -Ofast -Wall -Wextra './src/Chess.cpp' -o '.Engine.exe'
 On linux/mac, remove the .exe from the command.
 Go through the UCI command support of the readme to see what commands are available.
 
-### Setting up the Lichess Bot
+---
+
+## Setting up the Lichess Bot
 
 The code and files required for the Lichess bot is present in the `LichessBot` directory. Instructions here are in reference to that.
 
@@ -25,11 +30,9 @@ The code and files required for the Lichess bot is present in the `LichessBot` d
 4. Create a file named `token.txt` in the directory.
 5. Paste your Lichess API token into `token.txt`.
 7. Place your engine and opening book in the same directory as the script, and ensure they are named `Engine` and `OpeningBook.bin` respectively. You can get the opening book from this repo, and just download a suitable binary and remane it to `Engine`. You can change these names inside the script, if you wish to.
-6. Run the bot script:
-```bash
-python3 LichessBot/LichessBot.py
+6. Run the bot script: `python3 LichessBot/LichessBot.py`
 
-```
+---
 
 ## UCI Command Support
 
@@ -42,28 +45,20 @@ python3 LichessBot/LichessBot.py
 | `stop` | Terminates the search and instantly returns the current best move. |
 | `quit` | Exits the engine. |
 
-## Engine Features
-
-### Search Algorithms
-
-* **Iterative Deepening**: Dynamically manages time by searching deeper plies until the time limit or max depth is reached.
-* **MiniMax with Alpha-Beta Pruning**: Efficiently prunes the search tree to explore deeper lines by eliminating branches that cannot improve the outcome.
-* **Move Ordering**: Uses static evaluations to order moves, significantly increasing the efficiency of the Alpha-Beta pruning.
+---
 
 ## Project Structure
 
 * `src/Chess.cpp`: The UCI loop.
-* `src/MakeMove.h`: Search logic(iterative deepening and minimax).
+* `src/MakeMove.h`: Search logic - iterative deepening and minimax.
 * `src/Defs.h`: Global variable and utility function definitions.
 * `src/MoveGen.h`: Move generator.
 * `src/MovePiece.h`: Logic for updating board state after moves.
 * `src/LookupTables.h`: Initializes the Magic/Pext bitboards for sliding piece lookups.
 * `src/Misc.h`: Printing moves, parsing moves, Parse FEN, etc.
-
 * `LichessBot/LichessBot.py`: Python script for Lichess API integration.
-* `LichessBot/OpeningBook.bin`: The [Cerebellum](https://zipproth.de/Brainfish/Cerebellum_Light_3Merge_200916.7z) Opening Book. This is managed by git LFS. Not connected to the engine, it is handled independantly by `LichessBot.py`.
+* `LichessBot/OpeningBook.bin`: The [Cerebellum](https://zipproth.de/Brainfish/Cerebellum_Light_3Merge_200916.7z) Opening Book. Not connected to the engine, it is handled independantly by `LichessBot.py`.
 * `LichessBot/requirements.txt`: Python pip requirements file to run the bot.
 * `LichessBot/token.txt`: (User-provided) API token for Lichess.
-
 * `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the `pgns` directory. NOTE - You will have to download your own PGN files in the `pgns` directory if you want to make your own opening book.
 * `test/`: A folder containing a script to check if the new version of the engine is actually better.
