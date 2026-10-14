@@ -72,6 +72,8 @@ inline string MoveToStr(const Move move){
             case 4: MoveStr += 'q'; break;
         }
     }
+
+    if (MoveStr == "a1a1") return "0000";
     return MoveStr;
 }
 
@@ -121,12 +123,11 @@ inline Move StrToMove(const string MoveStr, chess& b){
 
 inline void ParseFEN(string FullFEN, chess &b){
     // Split FEN
-    vector<string> segments;
-    size_t pos = 0;
-    while ((pos = FullFEN.find(" ")) != string::npos) {
-        segments.push_back(FullFEN.substr(0, pos));
-        FullFEN.erase(0, pos + 1);
-    }
+    vector<string> segments = {};
+    string token;
+    istringstream stream(FullFEN);
+    while (stream >> token) {segments.push_back(token);}
+    if (segments.size() < 4) return;
     
     string fen = segments[0];
     string plr = segments[1];

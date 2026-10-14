@@ -62,13 +62,14 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chro
 inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
     timept StartTime = chrono::high_resolution_clock::now();
     Move OverallBestMove = 0;
-    int CurrentDepth = 2;
+    int CurrentDepth = 1;
     int BestEval = -INT_MAX;
     while (TimeElapsed(StartTime) < time && CurrentDepth <= Mdepth && !StopSignal.load() && !(abs(BestEval) >= MATE_BOUND && CurrentDepth > 2)){
         int eval;
         int DepthBestMove = 0;
         int alpha = -INT_MAX;
         int beta = INT_MAX;
+        bool LegalFound = false;
         MoveList Moves = PseudoLegals(b);
 
         // Compute static evals of each position for move ordering
@@ -100,6 +101,7 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
             }
             StaticEvals[MaxIndex] = -INT_MAX;
             if (!MovePiece(Moves[MaxIndex], b)) continue;
+            LegalFound = true;
             eval = -MiniMax(b, CurrentDepth, -beta, -alpha, StartTime, time);
             UnmovePiece(Moves[MaxIndex], b);
             
@@ -113,9 +115,12 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
             }
             if (alpha >= beta) break;
         }
+
+        if (!LegalFound) break;
+
         BestEval = alpha;
         OverallBestMove = DepthBestMove;
-        cout << "info Depth: " << CurrentDepth << ", Move: " << MoveToStr(OverallBestMove) << endl;
+        cout << "info depth " << CurrentDepth << " move " << MoveToStr(OverallBestMove) << endl;
         ++CurrentDepth;
     }
     return OverallBestMove;
