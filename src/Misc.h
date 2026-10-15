@@ -15,16 +15,8 @@ inline int StaticEval(const chess &b){
 inline bool IsAttacked(const chess &b, int sq, bool byWhite){
     const Bitboard sqBB = 1ULL << sq;
 
-    const Bitboard KnightAtt =
-        ((sqBB & clear_h & clear_g) >> 6) | ((sqBB & clear_h) >> 15) |
-        ((sqBB & clear_a) >> 17)          | ((sqBB & clear_a & clear_b) >> 10) |
-        ((sqBB & clear_a & clear_b) << 6) | ((sqBB & clear_a) << 15) |
-        ((sqBB & clear_h) << 17)          | ((sqBB & clear_h & clear_g) << 10);
-
-    const Bitboard KingAtt =
-        ((sqBB & clear_a) << 7) | (sqBB << 8) | ((sqBB & clear_h) << 9) |
-        ((sqBB & clear_h) << 1) | ((sqBB & clear_h) >> 7) | (sqBB >> 8) |
-        ((sqBB & clear_a) >> 9) | ((sqBB & clear_a) >> 1);
+    const Bitboard KnightAtt = KnightAttacks[sq];
+    const Bitboard KingAtt = KingAttacks[sq];
 
     #ifdef USE_BMI2
         const Bitboard diag = BishopMovesLookup[sq][pext(b.pieces, BishopBlockers[sq])];

@@ -3,6 +3,16 @@
 
 #include "Defs.h"
 
+inline Bitboard ComputeKingMoves(Bitboard piece){
+    return ((piece & clear_h) << 1) | ((piece & clear_a) << 7) | (piece << 8) | ((piece & clear_h) << 9) | 
+           ((piece & clear_a) >> 1) | ((piece & clear_h) >> 7) | (piece >> 8) | ((piece & clear_a) >> 9);
+}
+
+inline Bitboard ComputeKnightMoves(Bitboard piece){
+    return ((piece & clear_h & clear_g) >> 6) | ((piece & clear_a & clear_b) >> 10) | ((piece & clear_h) >> 15) | ((piece & clear_a) >> 17) |
+           ((piece & clear_a & clear_b) << 6) | ((piece & clear_h & clear_g) << 10) | ((piece & clear_a) << 15) | ((piece & clear_h) << 17);
+}
+
 // Generate Rook and Bishop Lookup Tables
 inline Bitboard ComputeRookMoves(Bitboard piece, Bitboard blockers){
     Bitboard moves=0;
@@ -302,9 +312,18 @@ inline void GenerateBishopTables(){
     }
 }
 
+inline void GenerateNonSlidingTables(){
+    for (int i = 0; i < 64; ++i){
+        Bitboard piece = (1ULL << i);
+        KingAttacks[i] = ComputeKingMoves(piece);
+        KnightAttacks[i] = ComputeKnightMoves(piece);
+    }
+}
+
 inline void GenerateLookupTables(){
     GenerateRookTables();
     GenerateBishopTables();
+    GenerateNonSlidingTables();
 }
 
 #endif
