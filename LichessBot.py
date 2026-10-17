@@ -76,16 +76,15 @@ def OpeningBookMove(fen):
         return None
 
 def BestMove(fen):
-    fenb=fen
-    fen=fen.split(' ')
+    segments = fen.split(' ')
     move = None
-    if int(fen[-1])<10:
-        move = OpeningBookMove(fenb)
+    if int(segments[-1])<10:
+        move = OpeningBookMove(fen)
     if move:
         print("OpeningBook: "+move)
         return move
     
-    eng.stdin.write("position fen " + fen[0]+" "+fen[1] + '\n')
+    eng.stdin.write("position fen " + fen + '\n')
     eng.stdin.write("go movetime 3000"+'\n')
     eng.stdin.flush()
     move = eng.stdout.readline()[:-1].split(' ')[1]

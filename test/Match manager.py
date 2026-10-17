@@ -2,17 +2,12 @@ import chess
 import chess.polyglot
 import subprocess
 
-<<<<<<< HEAD
-eng_old=subprocess.Popen(['./eng_old.exe'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-eng_new=subprocess.Popen(['./eng_new.exe'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-=======
-eng_old=subprocess.Popen(['./a.exe'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-eng_new=subprocess.Popen(['./Engine.exe'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
->>>>>>> 5c4f716 (First)
-brdr=chess.polyglot.MemoryMappedReader('ob.bin')
+eng_old=subprocess.Popen(['./EngineOld.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+eng_new=subprocess.Popen(['./Engine.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+brdr=chess.polyglot.MemoryMappedReader('OpeningBook.bin')
 
 fens=[]
-fil=open('fens.txt','r')
+fil=open('./test/fens.txt','r')
 for lin in fil:
     fens.append(lin)
 fil.close()
@@ -24,17 +19,18 @@ def ob(fen):
     return o
 
 def BestMove(fen,eng):
-    fenb=fen
-    fen=fen.split(' ')
-    if int(fen[-1])<10:
-        output=ob(fenb)
-        if output:
-            return output
-    eng.stdin.write(fen[0]+"\n")
-    eng.stdin.write(fen[1]+'\n')
+    segments = fen.split(' ')
+    move = None
+    if int(segments[-1])<10:
+        move = ob(fen)
+    if move:
+        return move
+    
+    eng.stdin.write("position fen " + fen + '\n')
+    eng.stdin.write("go movetime 700"+'\n')
     eng.stdin.flush()
-    output = eng.stdout.readline()[:-1]
-    return output.replace('=','')
+    move = eng.stdout.readline()[:-1].split(' ')[1]
+    return move
 
 wins=0
 draws=0

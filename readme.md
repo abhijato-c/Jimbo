@@ -63,6 +63,9 @@ python3 bot.py
 * `src/MovePiece.cpp`: Logic for updating board state after moves.
 * `src/LookupTables.cpp`: Magic bitboard or sliding piece lookup generation.
 * `src/Misc.cpp`: Printing moves, Parse FEN, etc.
-* `bot.py`: Python script for Lichess API integration.
-* `ob.bin`: An opening book that bot.py uses(not connected to the engine).
+* `pgns/*.pgn`: 249 PGN files downloaded from PGNMentor to make an opening book.
+* `test/`: A folder containing a script to check if the new version of the engine is actually better.
+* `LichessBot.py`: Python script for Lichess API integration.
+* `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the 'pgns' directory.
+* `OpeningBook.bin`: An opening book that bot.py uses(not connected to the engine).
 * `token.txt`: (User-provided) API token for Lichess.

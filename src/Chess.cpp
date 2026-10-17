@@ -5,18 +5,12 @@
 #include "LookupTables.cpp"
 #include <sstream>
 
+// TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
+
 int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int time = 2147483647){
-    if (depth <= 1) return StaticEval(b);
-    
+    if(depth == 1) return StaticEval(b);
     //check for game over, higher eval for delayed checkmate
-    if(b.wk==0){
-        if (b.turn) return -128-depth;
-        return 128+depth;
-    }
-    if (b.bk==0){
-        if (b.turn) return 128+depth;
-        return -128-depth;
-    }
+    if(b.wk == 0 || b.bk == 0) return (-128 - depth);
 
     chess rd;
     vector<Move> Moves = pl_moves(b);
@@ -55,9 +49,9 @@ int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::hig
 Move BestMove(chess &b, int MaxDepth){
     chess rd;
     int eval;
-    int alpha = -999;
-    int beta = 999;
-    Move BestMove = 0;
+    int alpha = -inf;
+    int beta = inf;
+    Move Best = 0;
     vector<Move> Moves = pl_moves(b);
 
     // Compute static evals of each position for move ordering
@@ -85,59 +79,58 @@ Move BestMove(chess &b, int MaxDepth){
         eval = -MiniMax(rd, MaxDepth, -beta, -alpha);
         if(eval>alpha){
             alpha = eval;
-            BestMove = Moves[MaxIndex];
+            Best = Moves[MaxIndex];
         }
         if(alpha>=beta) break;
     }
-    return BestMove;
+    return Best;
 }
 
 Move IterativeDeepening(chess &b, int &t){
     auto s=chrono::high_resolution_clock::now();
     int d=2;
     Move bm=0;
-    int besteval=-999;
+    int besteval = -inf;
     while((int)(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count())<t){
         chess rd;
         int eval;
-        int bestmove=0;
-        int alpha=-999;
-        int beta=999;
-        vector<Move> mvs=pl_moves(b);
+        int bestmove = 0;
+        int alpha = -inf;
+        int beta = inf;
+        vector<Move> Moves = pl_moves(b);
 
-        //move ordering
-        int advs[mvs.size()];
-        for (int i=0;i<(int)mvs.size();++i){
+        // Compute static evals of each position for move ordering
+        int StaticEvals[Moves.size()];
+        for (int i=0; i<(int)Moves.size(); ++i){
             rd=b;
-            move_piece(mvs[i],rd);
-            advs[i]=-StaticEval(rd);
+            move_piece(Moves[i], rd);
+            StaticEvals[i] = -StaticEval(rd);
         }
 
-        //evaluate advantage
-        for(int i=0;i<(int)mvs.size();++i){
-            //get the maximum advantage for highest ab efficiency
-            int maxi=advs[0];
-            int maxelem=0;
-            for(int j=1;j<(int)mvs.size();++j){
-                if(advs[j]>maxi){
-                    maxi=advs[j];
-                    maxelem=j;
+        // Evaluate positions in order of static evals
+        for(int i=0; i<(int)Moves.size(); ++i){
+            // Find position with highest static eval
+            int MaxEval = StaticEvals[0];
+            int MaxIndex = 0;
+            for(int j=1; j<(int)Moves.size(); ++j){
+                if(StaticEvals[j] > MaxEval){ 
+                    MaxEval = StaticEvals[j]; 
+                    MaxIndex=j;
                 }
             }
-            advs[maxelem]=-9999;
+            StaticEvals[MaxIndex] = -inf;
             rd=b;
-            move_piece(mvs[maxelem],rd);
+            move_piece(Moves[MaxIndex], rd);
             eval = -MiniMax(rd, d, -beta, -alpha, s, t);
             if((int)(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count())>t){
-                if(alpha>besteval)
-                    return bestmove; 
+                if(alpha>besteval) return bestmove; 
                 return bm;
             }
             if(eval>alpha){
                 alpha=eval;
-                bestmove=mvs[maxelem];
+                bestmove=Moves[MaxIndex];
             }
-            if(alpha>=beta){break;}
+            if(alpha>=beta) break;
         }
         besteval=alpha;
         bm=bestmove;
@@ -155,7 +148,7 @@ void profile(int iters=6, string fen="r1bq3r/pp1pkpN1/3p4/8/8/2Q4P/P3PP1P/R2K1B1
         int best_move = BestMove(b, 6);
         move_piece(best_move,b);
         cout<<i<<"-";
-        PrintMove(best_move);
+        cout << MoveToStr(best_move) << endl;
     }
     cout<<endl;
     auto stop=chrono::high_resolution_clock::now();
@@ -167,7 +160,7 @@ void profile(int iters=6, string fen="r1bq3r/pp1pkpN1/3p4/8/8/2Q4P/P3PP1P/R2K1B1
 int main(){
     generate_rook_tables();
     generate_bishop_tables();
-    
+
     string line, command;
     chess brd;
 
@@ -180,14 +173,10 @@ int main(){
         else if (command == "position") {
             string sub;
             ss >> sub;
-            if (sub == "startpos") {ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w", brd);} 
+            if (sub == "startpos") {ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);} 
             else if (sub == "fen") {
-                // todo: change to i<6 on full fen implementation
                 string fenStr, part;
-                for(int i=0; i<2; i++) { 
-                    ss >> part; 
-                    fenStr += part + " "; 
-                }
+                while (ss >> part) fenStr += part + " ";
                 ParseFEN(fenStr, brd);
             }
             
@@ -219,7 +208,7 @@ int main(){
                 best = IterativeDeepening(brd, lim);
             }
             cout << "bestmove ";
-            PrintMove(best);
+            cout << MoveToStr(best) << endl;
         } 
         //todo: stop command
         else if (command == "quit") { break; }
