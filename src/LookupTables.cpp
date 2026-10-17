@@ -24,20 +24,7 @@ unsigned long long random_magic_candidate() {return get_random_U64() & get_rando
 // Returns the magic index
 Bitboard transform(Bitboard b, Bitboard magic, int bits) {return (b * magic) >> (64 - bits);}
 
-// Find magics here
-
 // Generate Rook and Bishop Lookup Tables
-Bitboard pdep(Bitboard val, Bitboard mask) {
-    //TODO: Optimize using BMI2 instruction _pdep_u64 if available (_pdep_u64)
-    Bitboard res = 0;
-    for (Bitboard m = mask; m; m &= (m - 1)) {
-        Bitboard bit = m & -m; // Get lowest set bit of mask
-        if (val & 1) res |= bit;
-        val >>= 1;
-    }
-    return res;
-}
-
 Bitboard ComputeRookMoves(Bitboard piece, Bitboard blockers){
     Bitboard moves=0;
     Bitboard loc = piece<<8;
@@ -164,16 +151,123 @@ Bitboard ComputeBishopBlockers(Bitboard piece){
     return side;
 }
 
+// Find magics
+void FindRookMagic(int sq){
+    Bitboard mask = rook_blockers[sq];
+    int bits = popcnt(mask);
+    int num_permutations = 1 << bits;
+
+    vector<Bitboard> blockers(num_permutations);
+    vector<Bitboard> attacks(num_permutations);
+    vector<Bitboard> used(num_permutations);
+
+    // Pre-calculate all attacks for this square
+    for (int i = 0; i < num_permutations; i++) {
+        blockers[i] = pdep(i, mask);
+        attacks[i] = ComputeRookMoves(1ULL << sq, blockers[i]);
+    }
+
+    
+    // Search for a Magic Number
+    for (int k = 0; k < 100000000; k++) {
+        Bitboard magic = random_magic_candidate();
+        
+        // Skip magics that don't have enough bits to create entropy (Heuristic)
+        if (__builtin_popcountll((mask * magic) & 0xFF00000000000000ULL) < 6) continue;
+
+        // Verify the magic number
+        fill(used.begin(), used.end(), 0ULL);
+        bool fail = false;
+        
+        for (int i = 0; i < num_permutations; i++) {
+            int idx = (int)transform(blockers[i], magic, bits);
+            
+            if (used[idx] == 0ULL) used[idx] = attacks[i]; // New pattern
+            else if (used[idx] != attacks[i]) {
+                fail = true; // Collision with different attack set
+                break; 
+            }
+        }
+        
+        if (!fail) {
+            // Save variables.
+            RookMagics[sq] = magic;
+            RookShifts[sq] = 64 - bits;
+            return;
+        }
+    }
+    cout << "Magic generation failed for rook square " << sq << endl;
+}
+
+void FindBishopMagic(int sq) {
+    Bitboard mask = bishop_blockers[sq];
+    int bits = popcnt(mask);
+    int num_permutations = 1 << bits;
+    
+    vector<Bitboard> blockers(num_permutations);
+    vector<Bitboard> attacks(num_permutations);
+    vector<Bitboard> used(num_permutations);
+
+    // 1. Pre-calculate all attacks for this square
+    for (int i = 0; i < num_permutations; i++) {
+        // Use software pdep to generate the blocker configuration
+        blockers[i] = pdep(i, mask);
+        attacks[i] = ComputeBishopMoves(1ULL << sq, blockers[i]);
+    }
+
+    // 2. Search for a Magic Number
+    for (int k = 0; k < 100000000; k++) {
+        Bitboard magic = random_magic_candidate();
+        
+        // Skip magics that don't have enough bits to create entropy (Heuristic)
+        if (__builtin_popcountll((mask * magic) & 0xFF00000000000000ULL) < 6) continue;
+
+        // Verify the magic number
+        fill(used.begin(), used.end(), 0ULL);
+        bool fail = false;
+        
+        for (int i = 0; i < num_permutations; i++) {
+            int idx = (int)transform(blockers[i], magic, bits);
+            
+            if (used[idx] == 0ULL) used[idx] = attacks[i]; // New pattern
+            else if (used[idx] != attacks[i]) {
+                fail = true; // Collision with different attack set
+                break; 
+            }
+        }
+        
+        if (!fail) {
+            // Success! Save variables.
+            BishopMagics[sq] = magic;
+            BishopShifts[sq] = 64 - bits;
+            return;
+        }
+    }
+    cout << "Magic generation failed for bishop square " << sq << endl;
+}
+
 void GenerateRookTables(){
     for(int i=0;i<64;++i){
         Bitboard piece=(1ULL << i);
         Bitboard Blockers = ComputeRookBlockers(piece);
         rook_blockers[i] = Blockers;
 
-        for(int j=0; j<(1<<popcnt(Blockers)); ++j){
-            Bitboard blockers = pdep(j, Blockers);
-            rook_moves_lkup[i][j] = ComputeRookMoves(piece, blockers);
-        }
+        #ifdef USE_BMI2
+            // pext Bitboard
+            for(int j=0; j<(1<<popcnt(Blockers)); ++j){
+                Bitboard blockers = pdep(j, Blockers);
+                rook_moves_lkup[i][j] = ComputeRookMoves(piece, blockers);
+            }
+        #else
+            // Magic Bitboard
+            FindRookMagic(i); // Find magic for this square
+            int bits = 64 - RookShifts[i];
+            for(int j=0; j<(1<<bits); ++j){
+                Bitboard blockers = pdep(j, rook_blockers[i]);
+                int magic_idx = (int)((blockers * RookMagics[i]) >> RookShifts[i]);
+                rook_moves_lkup[i][magic_idx] = ComputeRookMoves(piece, blockers);
+            }
+        #endif
     }
 }
 
@@ -183,10 +277,22 @@ void GenerateBishopTables(){
         Bitboard Blockers = ComputeBishopBlockers(piece);
         bishop_blockers[i] = Blockers;
 
-        for(int j=0;j<(1<<popcnt(Blockers));++j){
-            Bitboard blockers = pdep(j,Blockers);
-            bishop_moves_lkup[i][j] = ComputeBishopMoves(piece, blockers);
-        }
+        #ifdef USE_BMI2
+            // pext Bitboard
+            for(int j=0;j<(1<<popcnt(Blockers));++j){
+                Bitboard blockers = pdep(j,Blockers);
+                bishop_moves_lkup[i][j] = ComputeBishopMoves(piece, blockers);
+            }
+        #else
+            // Magic Bitboard
+            FindBishopMagic(i);
+            int bits = 64 - BishopShifts[i];
+            for(int j=0; j<(1<<bits); ++j){
+                Bitboard blockers = pdep(j, bishop_blockers[i]);
+                int magic_idx = (int)((blockers * BishopMagics[i]) >> BishopShifts[i]);
+                bishop_moves_lkup[i][magic_idx] = ComputeBishopMoves(piece, blockers);
+            }
+        #endif
     }
 }
 

@@ -2,8 +2,8 @@ import chess
 import chess.polyglot
 import subprocess
 
-eng_old=subprocess.Popen(['./EngineOld.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-eng_new=subprocess.Popen(['./Engine.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+eng_old=subprocess.Popen(['./magic'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+eng_new=subprocess.Popen(['./bmi'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
 brdr=chess.polyglot.MemoryMappedReader('OpeningBook.bin')
 
 fens=[]
@@ -27,7 +27,7 @@ def BestMove(fen,eng):
         return move
     
     eng.stdin.write("position fen " + fen + '\n')
-    eng.stdin.write("go depth 6"+'\n')
+    eng.stdin.write("go movetime 600"+'\n')
     eng.stdin.flush()
     move = eng.stdout.readline()[:-1].split(' ')[1]
     return move
@@ -36,7 +36,7 @@ wins=0
 draws=0
 losses=0
 print(len(fens),"fens")
-for i in range(len(fens)):
+for i in range(100,len(fens)):
     fen=fens[i][:-1]
     print("game",i+1,"/",len(fens))
     print()
