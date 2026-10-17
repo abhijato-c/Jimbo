@@ -6,6 +6,7 @@
 #include <chrono>
 #include <immintrin.h>
 #include <bit>
+#include <atomic>
 #ifdef USE_BMI2
     #include <immintrin.h>
     #define pext(val, mask) _pext_u64(val, mask)
@@ -16,6 +17,8 @@ typedef unsigned long long int Bitboard;
 typedef unsigned int Move;
 typedef std::chrono::high_resolution_clock::time_point timept;
 using namespace std;
+
+extern atomic<bool> StopSignal;
 
 constexpr int inf = 300000;
 
