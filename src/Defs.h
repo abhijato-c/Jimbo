@@ -7,6 +7,7 @@
 #include <immintrin.h>
 #include <bit>
 #include <atomic>
+#include <climits>
 #ifdef USE_BMI2
     #include <immintrin.h>
     #define pext(val, mask) _pext_u64(val, mask)

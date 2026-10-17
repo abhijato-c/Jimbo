@@ -20,3 +20,6 @@ ARM
 
 MacOS
 1. Apple Silicon : clang++ -std=c++20 -Ofast -flto -arch arm64 -mcpu=apple-m1 -fno-exceptions src/Chess.cpp -o build/Jimbo-mac-arm64
+
+Native
+g++ -std=c++23 -Ofast -march=native -flto src/Chess.cpp -o build/Engine
