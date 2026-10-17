@@ -80,14 +80,14 @@ int main(){
             int TimeLimit = 0;
             int DepthLimit = 0;
 
-            for(int i = 1; i < command.size(); i += 2){
+            for(int i = 1; i < (int)command.size(); i += 2){
                 sub = command[i]; 
                 if (sub != "movetime" && sub != "depth"){
                     cout << "Illegal/unsupported subcommand " << sub << "!" << endl;
                     Success = false;
                     break;
                 }
-                if (command.size() == i+1) {
+                if ((int)command.size() == i+1) {
                     cout << "Incomplete go command!" << endl;
                     Success = false;
                     break;

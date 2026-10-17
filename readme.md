@@ -66,10 +66,10 @@ python3 LichessBot/LichessBot.py
 * `src/LookupTables.h`: Initializes the Magic/Pext bitboards for sliding piece lookups.
 * `src/Misc.h`: Printing moves, parsing moves, Parse FEN, etc.
 
-* `Lichess Bot/LichessBot.py`: Python script for Lichess API integration.
-* `Lichess Bot/OpeningBook.bin`: The [Cerebellum](https://zipproth.de/Brainfish/Cerebellum_Light_3Merge_200916.7z) Opening Book. This is managed by git LFS. Not connected to the engine, it is handled independantly by `LichessBot.py`.
-* `Lichess Bot/requirements.txt`: Python pip requirements file to run the bot.
-* `Lichess Bot/token.txt`: (User-provided) API token for Lichess.
+* `LichessBot/LichessBot.py`: Python script for Lichess API integration.
+* `LichessBot/OpeningBook.bin`: The [Cerebellum](https://zipproth.de/Brainfish/Cerebellum_Light_3Merge_200916.7z) Opening Book. This is managed by git LFS. Not connected to the engine, it is handled independantly by `LichessBot.py`.
+* `LichessBot/requirements.txt`: Python pip requirements file to run the bot.
+* `LichessBot/token.txt`: (User-provided) API token for Lichess.
 
 * `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the `pgns` directory. NOTE - You will have to download your own PGN files in the `pgns` directory if you want to make your own opening book.
 * `test/`: A folder containing a script to check if the new version of the engine is actually better.

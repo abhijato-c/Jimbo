@@ -157,10 +157,10 @@ class LichessBot:
         return response.json().get('nowPlaying', [])
 
     def CalculateTimeLimit(self, SecondsLeft: int, MovesPlayed: int) -> float:
-        if MovesPlayed < 60: MovesLeft = 80 - MovesPlayed
-        else: MovesLeft = 20
-        Time = max(0.2, SecondsLeft / MovesLeft - 0.2)
-        if Time > 10.0: Time = 5.0
+        MovesLeft = max(80 - MovesPlayed, 20)
+        Time = SecondsLeft / MovesLeft - 0.2
+        Time = max(0.2, Time)
+        if Time > 60: Time = 5
         return Time
 
     def GetBestMove(self, fen: str, TimeLimit: float, Engine: chess.engine.SimpleEngine) -> str:
@@ -266,8 +266,7 @@ class LichessBot:
                             if event['destUser']['id'] != self.Username: continue # Ignore outgoing
 
                             logger.info(f"Incoming challenge from {event['challenger']['id']}")
-                            if not event.get('rated'): self.AcceptChallenge(event['id'])
-                            else: self.RejectChallenge(event['id'], reason="casual")
+                            self.AcceptChallenge(event['id'])
                         
                         # Handle Game Start
                         elif event['type'] == 'gameStart':
