@@ -158,8 +158,7 @@ void profile(int iters=6, string fen="r1bq3r/pp1pkpN1/3p4/8/8/2Q4P/P3PP1P/R2K1B1
 }
 
 int main(){
-    generate_rook_tables();
-    generate_bishop_tables();
+    GenerateLookupTables();
 
     string line, command;
     chess brd;
