@@ -8,7 +8,7 @@
 
 // TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
 
-inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int64_t time = INT64_MAX){
+inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start, int64_t time){
     if(depth == 1) return StaticEval(b);
 
     MoveList Moves = PseudoLegals(b);
@@ -47,7 +47,8 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chro
         alpha = max(-MiniMax(b, depth-1, -beta, -alpha, start, time), alpha);
         UnmovePiece(Moves[MaxIndex], b);
 
-        if (alpha >= beta || TimeElapsed(start) > time || StopSignal.load()) return alpha;
+        if (alpha >= beta) return alpha;
+        if ((++NodeCount & 2047) == 0 && (TimeElapsed(start) > time || StopSignal.load())) return alpha;
     }
 
     if (!LegalFound){
@@ -65,6 +66,7 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
     int CurrentDepth = 1;
     int BestEval = -INT_MAX;
     while (TimeElapsed(StartTime) < time && CurrentDepth <= Mdepth && !StopSignal.load() && !(abs(BestEval) >= MATE_BOUND && CurrentDepth > 2)){
+        NodeCount = 0;
         int eval;
         int DepthBestMove = 0;
         int alpha = -INT_MAX;
