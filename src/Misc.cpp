@@ -1,4 +1,4 @@
-inline int seval(chess &b){
+inline int StaticEval(chess &b){
     ++nodes;
     if (b.turn)
         return ((__builtin_popcountll(b.wb)*4) +
@@ -27,7 +27,7 @@ inline int seval(chess &b){
                 (__builtin_popcountll(b.wk)*64));
 }
 
-inline void prtmv(const Move &mv){
+inline void PrintMove(const Move &mv){
     char files[]={'a','b','c','d','e','f','g','h'};
     int from = (mv & 63);
     int to = ((mv>>6) & 63);
