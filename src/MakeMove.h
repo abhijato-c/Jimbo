@@ -52,7 +52,7 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chro
 
     if (!LegalFound){
         // Checkmate
-        if (IsAttacked(b, ctz(b.turn ? b.wk : b.bk), b.turn ? false : true)) return -MATE_BOUND;
+        if (IsAttacked(b, ctz(b.turn ? b.wk : b.bk), b.turn ? false : true)) return (-MATE_BOUND - depth);
         // Stalemate
         else return 0;
     }
