@@ -12,7 +12,7 @@ fil.close()
 
 def BestMove(fen,eng):
     board = chess.Board(fen=fen)
-    result = eng.play(board, chess.engine.Limit(time=1))
+    result = eng.play(board, chess.engine.Limit(depth = 6))
     move = result.move.uci()
     return move
 

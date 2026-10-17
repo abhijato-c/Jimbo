@@ -8,13 +8,11 @@
 
 // TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
 
-inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int64_t time = INT64_MAX){
+inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int64_t time = INT64_MAX){
     //check for game over, higher eval for delayed checkmate
     if(b.wk == 0 || b.bk == 0) return (-inf + 30 - depth);
-    
     if(depth == 1) return StaticEval(b);
 
-    chess rd;
     MoveList Moves = PseudoLegals(b);
 
     // Compute static evals of each position for move ordering
@@ -45,22 +43,21 @@ inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start 
             }
         }
         StaticEvals[MaxIndex] = -inf;
-        rd=b;
-        move_piece(Moves[MaxIndex], rd);
-        alpha = max(-MiniMax(rd, depth-1, -beta, -alpha, start, time), alpha);
+        MovePiece(Moves[MaxIndex], b);
+        alpha = max(-MiniMax(b, depth-1, -beta, -alpha, start, time), alpha);
+        UnmovePiece(Moves[MaxIndex], b);
 
         if(alpha >= beta || TimeElapsed(start) > time || StopSignal.load()) return alpha;
     }
     return alpha;
 }
 
-inline Move IterativeDeepening(const chess &b, int64_t time, int Mdepth){
+inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
     timept StartTime = chrono::high_resolution_clock::now();
     int CurrentDepth = 2;
     Move OverallBestMove = 0;
     int BestEval = -inf;
     while(TimeElapsed(StartTime) < time && CurrentDepth <= Mdepth && !StopSignal.load() && !(abs(BestEval) >= 300 && CurrentDepth > 2)){
-        chess rd;
         int eval;
         int bestmove = 0;
         int alpha = -inf;
@@ -95,9 +92,10 @@ inline Move IterativeDeepening(const chess &b, int64_t time, int Mdepth){
                 }
             }
             StaticEvals[MaxIndex] = -inf;
-            rd=b;
-            move_piece(Moves[MaxIndex], rd);
-            eval = -MiniMax(rd, CurrentDepth, -beta, -alpha, StartTime, time);
+            MovePiece(Moves[MaxIndex], b);
+            eval = -MiniMax(b, CurrentDepth, -beta, -alpha, StartTime, time);
+            UnmovePiece(Moves[MaxIndex], b);
+            
             if(TimeElapsed(StartTime) > time || StopSignal.load()){
                 if(alpha > BestEval) return bestmove; 
                 return OverallBestMove;
@@ -119,19 +117,21 @@ inline Move IterativeDeepening(const chess &b, int64_t time, int Mdepth){
 inline void profile(int iters=6, string fen="r1k4r/2p1bq2/b4n1p/pp4p1/3QP3/7N/PP3PPP/RNB1R2K w - - 1 19"){
     chess b;
     ParseFEN(fen,b);
-    b.turn=false;
-    auto start=chrono::high_resolution_clock::now();
-    for(int i=1;i<=iters;++i){
-        int best_move = IterativeDeepening(b, INT64_MAX, 7);
-        move_piece(best_move,b);
+    nodes = 0;
+
+    timept start = chrono::high_resolution_clock::now();
+    for(int i = 1; i <= iters; ++i){
+        Move best = IterativeDeepening(b, INT64_MAX, 7);
+        MovePiece(best, b);
         cout<<i<<"-";
-        cout << MoveToStr(best_move) << endl;
+        cout << MoveToStr(best) << endl;
     }
-    int64_t TimeTaken = TimeElapsed(start);
-    cout<<endl;
-    cout << "time per move:" <<  TimeTaken / ((double)1000000*iters) << endl;
-    cout<<"nps:" << nodes*(double)1000000/TimeTaken << endl;
-    cout<<"nodes per move:"<<nodes/(double)iters<<endl;
+    double TimeTaken = TimeElapsed(start) / (double)1000;
+
+    cout << endl;
+    cout << "time per move:" <<  TimeTaken / iters << endl;
+    cout << "nps:" << nodes / TimeTaken << endl;
+    cout << "nodes per move:" << nodes / (double)iters << endl;
 }
 
 #endif

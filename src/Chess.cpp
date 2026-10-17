@@ -76,7 +76,6 @@ int main(){
             else { cout << "Illegal subcommand " << sub << "!" << endl; }
         } 
         else if (cmd == "go") {
-            Move best = 0;
             string sub;
             int arg;
             bool Success = true;
@@ -122,6 +121,10 @@ int main(){
         }
         else if (cmd == "stop") {
             // search already stopped when input arrived, can ignore.
+        }
+        else if (cmd == "profile") {
+            StopSignal = false;
+            profile();
         }
         else if (cmd == "quit") { break; }
         else { cout << "Illegal command " << cmd << "!" << endl;}

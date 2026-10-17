@@ -13,9 +13,12 @@
 	#define pdep(val, mask) _pdep_u64(val, mask)
 #endif
 
-typedef unsigned long long int Bitboard;
-typedef unsigned int Move;
 typedef std::chrono::high_resolution_clock::time_point timept;
+typedef unsigned long long int Bitboard;
+// Piece numbers : 0-pawn, 1:knight, 2:bishop, 3:rook, 4:queen, 5:king (+1 to all for capture)
+typedef uint32_t Move; // 19-21 cap pc, 16-18 from pc, 13-15 prom, 7-12 to, 1-6 from
+typedef uint32_t UnMove;
+
 using namespace std;
 
 extern atomic<bool> StopSignal;

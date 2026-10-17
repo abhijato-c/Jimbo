@@ -39,7 +39,7 @@ inline string MoveToStr(const Move move){
     return MoveStr;
 }
 
-inline Move StrToMove(const string MoveStr){
+inline Move StrToMove(const string MoveStr, chess& b){
     int FromFile = MoveStr[0] - 'a';
     int FromRank = MoveStr[1] - '1';
     int ToFile   = MoveStr[2] - 'a';
@@ -48,6 +48,7 @@ inline Move StrToMove(const string MoveStr){
     int from = (7 - FromFile) + (FromRank * 8);
     int to = (7 - ToFile) + (ToRank * 8);
     int prom = 0;
+    int fromPc = 0;
 
     if (MoveStr.length() == 5){
         switch(MoveStr[4]){
@@ -61,7 +62,15 @@ inline Move StrToMove(const string MoveStr){
                 prom = 4; break;
         }
     }
-    return (prom << 12) | (to << 6) | (from);
+
+    if ((b.wp | b.bp) & (1ULL << from)) fromPc = 0;
+    else if ((b.wn | b.bn) & (1ULL << from)) fromPc = 1;
+    else if ((b.wb | b.bb) & (1ULL << from)) fromPc = 2;
+    else if ((b.wr | b.br) & (1ULL << from)) fromPc = 3;
+    else if ((b.wq | b.bq) & (1ULL << from)) fromPc = 4;
+    else if ((b.wk | b.bk) & (1ULL << from)) fromPc = 5;
+
+    return (fromPc << 15) | (prom << 12) | (to << 6) | (from);
 }
 
 inline void ParseFEN(string FullFEN, chess &b){
