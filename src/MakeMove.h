@@ -9,11 +9,10 @@
 // TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
 
 inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int64_t time = INT64_MAX){
-    //check for game over, higher eval for delayed checkmate
-    if(b.wk == 0 || b.bk == 0) return (-MATE_BOUND - depth);
     if(depth == 1) return StaticEval(b);
 
     MoveList Moves = PseudoLegals(b);
+    bool LegalFound = false;
 
     // Compute static evals of each position for move ordering
     int StaticEvals[Moves.size()];
@@ -43,11 +42,19 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chro
             }
         }
         StaticEvals[MaxIndex] = -INT_MAX;
-        MovePiece(Moves[MaxIndex], b);
+        if (!MovePiece(Moves[MaxIndex], b)) continue;
+        LegalFound = true;
         alpha = max(-MiniMax(b, depth-1, -beta, -alpha, start, time), alpha);
         UnmovePiece(Moves[MaxIndex], b);
 
         if (alpha >= beta || TimeElapsed(start) > time || StopSignal.load()) return alpha;
+    }
+
+    if (!LegalFound){
+        // Checkmate
+        if (IsAttacked(b, ctz(b.turn ? b.wk : b.bk), b.turn ? false : true)) return -MATE_BOUND;
+        // Stalemate
+        else return 0;
     }
     return alpha;
 }
@@ -92,7 +99,7 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
                 }
             }
             StaticEvals[MaxIndex] = -INT_MAX;
-            MovePiece(Moves[MaxIndex], b);
+            if (!MovePiece(Moves[MaxIndex], b)) continue;
             eval = -MiniMax(b, CurrentDepth, -beta, -alpha, StartTime, time);
             UnmovePiece(Moves[MaxIndex], b);
             
