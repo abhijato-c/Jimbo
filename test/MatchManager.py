@@ -1,11 +1,20 @@
 import chess
 import chess.engine
 
-eng_old=chess.engine.SimpleEngine.popen_uci('./EngineOld')
-eng_new=chess.engine.SimpleEngine.popen_uci('./Engine')
+eng_old = chess.engine.SimpleEngine.popen_uci('./test/EngineOld')
+eng_new = chess.engine.SimpleEngine.popen_uci('./test/Engine')
 
-fens=[]
-fil=open('./test/fens.txt','r')
+piece_values = {
+    chess.PAWN: 1,
+    chess.KNIGHT: 3,
+    chess.BISHOP: 3,
+    chess.ROOK: 5,
+    chess.QUEEN: 9,
+    chess.KING: 0,
+}
+
+fens = []
+fil = open('./test/fens.txt','r')
 for lin in fil:
     fens.append(lin)
 fil.close()
@@ -16,33 +25,40 @@ def BestMove(fen,eng):
     move = result.move.uci()
     return move
 
-wins=0
-draws=0
-losses=0
+w = 0
+d = 0
+l = 0
+a = 0
 print(len(fens),"fens")
 
 for i in range(len(fens)):
-    fen=fens[i][:-1]
+    fen = fens[i][:-1]
     print("Round - " + str(i+1) + "/" + str(len(fens)))
-    print()
 
     # Old as white, new as black
-    b=chess.Board(fen=fen)
+    b = chess.Board(fen=fen)
     while(not b.is_game_over()):
         if b.turn==chess.WHITE:
-            best = BestMove(b.fen(),eng_old)
+            best = BestMove(b.fen(), eng_old)
         else:
-            best = BestMove(b.fen(),eng_new)
+            best = BestMove(b.fen(), eng_new)
         
         b.push(b.parse_uci(best))
 
     winner = b.outcome().winner
-    if winner == chess.WHITE: losses+=1
-    elif winner == chess.BLACK: wins+=1
-    else: draws+=1
+    if winner == chess.WHITE: l += 1
+    elif winner == chess.BLACK: w += 1
+    else: d += 1
+
+    white_score = sum(len(b.pieces(piece_type, chess.WHITE)) * val for piece_type, val in piece_values.items())
+    black_score = sum(len(b.pieces(piece_type, chess.BLACK)) * val for piece_type, val in piece_values.items())
+
+    a -= white_score 
+    a += black_score
+    print(b.outcome().termination.name, " ", black_score - white_score)
 
     # New as white, old as black
-    b=chess.Board(fen=fen)
+    b = chess.Board(fen=fen)
     while(not b.is_game_over()):
         if b.turn==chess.WHITE:
             best = BestMove(b.fen(),eng_new)
@@ -52,11 +68,22 @@ for i in range(len(fens)):
         b.push(b.parse_uci(best))
     
     winner = b.outcome().winner
-    if winner == chess.WHITE: wins+=1
-    elif winner == chess.BLACK: losses+=1
-    else: draws+=1
+    if winner == chess.WHITE: w += 1
+    elif winner == chess.BLACK: l += 1
+    else: d += 1
 
-    print("wins",wins)
-    print("draws",draws)
-    print("losses",losses)
+    white_score = sum(len(b.pieces(piece_type, chess.WHITE)) * val for piece_type, val in piece_values.items())
+    black_score = sum(len(b.pieces(piece_type, chess.BLACK)) * val for piece_type, val in piece_values.items())
+
+    a += white_score 
+    a -= black_score
+    print(b.outcome().termination.name, " ", white_score - black_score)
+
+    print("wins", w)
+    print("draws", d)
+    print("losses", l)
+    print("adv", a)
     print()
+
+eng_new.close()
+eng_new.close()

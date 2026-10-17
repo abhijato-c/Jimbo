@@ -99,6 +99,9 @@ struct MoveList {
     Move& operator[](int index) { return moves[index]; }
 };
 
+inline Bitboard KingAttacks[64];
+inline Bitboard KnightAttacks[64];
+
 inline Bitboard RookBlockers[64];
 inline Bitboard RookMovesLookup[64][4096];
 inline Bitboard BishopBlockers[64];
