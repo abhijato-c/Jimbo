@@ -51,8 +51,8 @@ python3 bot.py
 | --- | --- |
 | `uci` | Identifies the engine and returns `uciok`. |
 | `isready` | Synchronizes the engine with the GUI. |
-| `position [fen | startpos]` | Sets up the board state. |
-| `go [movetime | depth]` | Starts the engine calculation. |
+| `position [fen / startpos]` | Sets up the board state. |
+| `go [movetime / depth]` | Starts the engine calculation. |
 | `quit` | Exits the engine. |
 
 ## 📂 Project Structure
