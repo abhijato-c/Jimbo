@@ -14,16 +14,26 @@
 	#define blsr(val) _blsr_u64(val)
 #endif
 
+using namespace std;
+
 typedef std::chrono::high_resolution_clock::time_point timept;
 typedef unsigned long long int Bitboard;
 // Piece numbers : 0-pawn, 1:knight, 2:bishop, 3:rook, 4:queen, 5:king (+1 to all for capture)
 typedef uint32_t Move; // 19-21 cap pc, 16-18 from pc, 13-15 prom, 7-12 to, 1-6 from
-typedef uint32_t UnMove;
 
-using namespace std;
+/* 
+Move encoding
+
+0-5   : from square    (0-63)
+6-11  : to square      (0-63)
+12-14 : promotion      (0=none 1=N 2=B 3=R 4=Q)
+15-17 : from piece     (0=P 1=N 2=B 3=R 4=Q 5=K)
+18-20 : captured piece (0=none 1=P 2=N 3=B 4=R 5=Q 6=K 7=EP)
+21-24 : prev castling rights (WK | WQ | BK | BQ)
+25-31 : prev ep square + 1   (0 = no prev ep; 1-64 = sq+1)
+*/
 
 extern atomic<bool> StopSignal;
-
 constexpr int inf = 300000;
 
 constexpr Bitboard clear_a=9187201950435737471ULL;
@@ -69,6 +79,7 @@ struct chess {
     bool WCastleKing = true; bool WCastleQueen = true;
     bool BCastleKing = true; bool BCastleQueen = true;
     bool turn = true;
+	int ep = -1;
 };
 
 struct MoveList {

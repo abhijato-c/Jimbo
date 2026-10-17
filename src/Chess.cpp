@@ -37,7 +37,7 @@ void StopSearch(){
 int main(){
     cout << "Generating lookup tables, hold tight..." << endl;
     GenerateLookupTables();
-    
+
     string line, command;
     chess brd;
 

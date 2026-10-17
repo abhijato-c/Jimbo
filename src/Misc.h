@@ -45,24 +45,23 @@ inline Move StrToMove(const string MoveStr, chess& b){
     int ToFile   = MoveStr[2] - 'a';
     int ToRank   = MoveStr[3] - '1';
 
-    int from = (7 - FromFile) + (FromRank * 8);
-    int to = (7 - ToFile) + (ToRank * 8);
-    int prom = 0;
-    int fromPc = 0;
+    uint32_t from = (7 - FromFile) + (FromRank * 8);
+    uint32_t to = (7 - ToFile) + (ToRank * 8);
+    uint32_t prom = 0;
+    uint32_t fromPc = 0;
+    uint32_t capPc = 0;
 
+    // Handle Promoted Piece
     if (MoveStr.length() == 5){
         switch(MoveStr[4]){
-            case 'n':
-                prom = 1; break;
-            case 'b':
-                prom = 2; break;
-            case 'r':
-                prom = 3; break;
-            case 'q':
-                prom = 4; break;
+            case 'n': prom = 1; break;
+            case 'b': prom = 2; break;
+            case 'r': prom = 3; break;
+            case 'q': prom = 4; break;
         }
     }
 
+    // Identify from piece
     if ((b.wp | b.bp) & (1ULL << from)) fromPc = 0;
     else if ((b.wn | b.bn) & (1ULL << from)) fromPc = 1;
     else if ((b.wb | b.bb) & (1ULL << from)) fromPc = 2;
@@ -70,7 +69,20 @@ inline Move StrToMove(const string MoveStr, chess& b){
     else if ((b.wq | b.bq) & (1ULL << from)) fromPc = 4;
     else if ((b.wk | b.bk) & (1ULL << from)) fromPc = 5;
 
-    return (fromPc << 15) | (prom << 12) | (to << 6) | (from);
+    // Identify captured piece
+    if ((b.wp | b.bp) & (1ULL << to)) capPc = 1;
+    else if ((b.wn | b.bn) & (1ULL << to)) capPc = 2;
+    else if ((b.wb | b.bb) & (1ULL << to)) capPc = 3;
+    else if ((b.wr | b.br) & (1ULL << to)) capPc = 4;
+    else if ((b.wq | b.bq) & (1ULL << to)) capPc = 5;
+    else if ((b.wk | b.bk) & (1ULL << to)) capPc = 6;
+
+    // En passant detection: pawn moves diagonally to an empty square
+    if (fromPc == 0 && FromFile != ToFile && capPc == 0) {
+        capPc = 7;
+    }
+    
+    return (capPc << 18) | (fromPc << 15) | (prom << 12) | (to << 6) | from;
 }
 
 inline void ParseFEN(string FullFEN, chess &b){
