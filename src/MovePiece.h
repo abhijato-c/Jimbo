@@ -3,7 +3,7 @@
 
 #include "Defs.h"
 
-inline void move_piece_white(const Move &mv, chess &b){
+inline void move_piece_white(const Move mv, chess &b){
     Bitboard t = ~(1ULL << ((mv>>6) & 63));
     b.bb &= t;
     b.bk &= t;
@@ -58,7 +58,7 @@ inline void move_piece_white(const Move &mv, chess &b){
     b.pieces=b.bpcs|b.wpcs;
 }
 
-inline void move_piece_black(const Move &mv, chess &b){
+inline void move_piece_black(const Move mv, chess &b){
     Bitboard t = ~(1ULL << ((mv>>6) & 63));
     b.wb &= t;
     b.wk &= t;
@@ -113,7 +113,7 @@ inline void move_piece_black(const Move &mv, chess &b){
     b.pieces=b.bpcs|b.wpcs;
 }
 
-inline void move_piece(const Move &mv, chess &b){
+inline void move_piece(const Move mv, chess &b){
     switch(b.turn){
         case true:
             return move_piece_white(mv,b);
