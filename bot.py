@@ -87,7 +87,7 @@ def BestMove(fen):
 def GetChallenges():
     return [x['id'] for x in get("listchlng").json()['in']]
 
-eng=subprocess.Popen(['Engine.exe'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+eng=subprocess.Popen(['./Engine.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
 brdr=chess.polyglot.MemoryMappedReader('ob.bin')
 while True:
     try:
