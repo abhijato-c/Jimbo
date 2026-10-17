@@ -1,7 +1,7 @@
 // Magic Bitboard
 // Simple Xorshift pseudo-random number generator
 unsigned int state = 1804289383;
-unsigned int get_random_U32() {
+inline unsigned int get_random_U32() {
     unsigned int number = state;
     number ^= number << 13;
     number ^= number >> 17;
@@ -10,7 +10,7 @@ unsigned int get_random_U32() {
     return number;
 }
 
-unsigned long long get_random_U64() {
+inline unsigned long long get_random_U64() {
     unsigned long long n1 = (unsigned long long)(get_random_U32()) & 0xFFFF;
     unsigned long long n2 = (unsigned long long)(get_random_U32()) & 0xFFFF;
     unsigned long long n3 = (unsigned long long)(get_random_U32()) & 0xFFFF;
@@ -19,13 +19,13 @@ unsigned long long get_random_U64() {
 }
 
 // Generate a candidate magic number
-unsigned long long random_magic_candidate() {return get_random_U64() & get_random_U64() & get_random_U64();}
+inline unsigned long long random_magic_candidate() {return get_random_U64() & get_random_U64() & get_random_U64();}
 
 // Returns the magic index
-Bitboard transform(Bitboard b, Bitboard magic, int bits) {return (b * magic) >> (64 - bits);}
+inline Bitboard transform(Bitboard b, Bitboard magic, int bits) {return (b * magic) >> (64 - bits);}
 
 // Generate Rook and Bishop Lookup Tables
-Bitboard ComputeRookMoves(Bitboard piece, Bitboard blockers){
+inline Bitboard ComputeRookMoves(Bitboard piece, Bitboard blockers){
     Bitboard moves=0;
     Bitboard loc = piece<<8;
     if(loc!=0){
@@ -62,7 +62,7 @@ Bitboard ComputeRookMoves(Bitboard piece, Bitboard blockers){
     return moves;
 }
 
-Bitboard ComputeBishopMoves(Bitboard piece, Bitboard blockers){
+inline Bitboard ComputeBishopMoves(Bitboard piece, Bitboard blockers){
     Bitboard moves=0;
     Bitboard loc=piece<<9;
     if((loc&clear_h)!=0){
@@ -99,7 +99,7 @@ Bitboard ComputeBishopMoves(Bitboard piece, Bitboard blockers){
     return moves;
 }
 
-Bitboard ComputeRookBlockers(Bitboard piece){
+inline Bitboard ComputeRookBlockers(Bitboard piece){
     Bitboard side=0;
     Bitboard loc=piece;
     while ((loc<<8)!=0){
@@ -125,7 +125,7 @@ Bitboard ComputeRookBlockers(Bitboard piece){
     return side;
 }
 
-Bitboard ComputeBishopBlockers(Bitboard piece){
+inline Bitboard ComputeBishopBlockers(Bitboard piece){
     Bitboard side=0;
     Bitboard loc=piece;
     while ((loc&clear_a&clear_8)!=0){
@@ -152,7 +152,7 @@ Bitboard ComputeBishopBlockers(Bitboard piece){
 }
 
 // Find magics
-void FindRookMagic(int sq){
+inline void FindRookMagic(int sq){
     Bitboard mask = rook_blockers[sq];
     int bits = popcnt(mask);
     int num_permutations = 1 << bits;
@@ -173,7 +173,7 @@ void FindRookMagic(int sq){
         Bitboard magic = random_magic_candidate();
         
         // Skip magics that don't have enough bits to create entropy (Heuristic)
-        if (__builtin_popcountll((mask * magic) & 0xFF00000000000000ULL) < 6) continue;
+        if (popcnt((mask * magic) & 0xFF00000000000000ULL) < 6) continue;
 
         // Verify the magic number
         fill(used.begin(), used.end(), 0ULL);
@@ -199,7 +199,7 @@ void FindRookMagic(int sq){
     cout << "Magic generation failed for rook square " << sq << endl;
 }
 
-void FindBishopMagic(int sq) {
+inline void FindBishopMagic(int sq) {
     Bitboard mask = bishop_blockers[sq];
     int bits = popcnt(mask);
     int num_permutations = 1 << bits;
@@ -220,7 +220,7 @@ void FindBishopMagic(int sq) {
         Bitboard magic = random_magic_candidate();
         
         // Skip magics that don't have enough bits to create entropy (Heuristic)
-        if (__builtin_popcountll((mask * magic) & 0xFF00000000000000ULL) < 6) continue;
+        if (popcnt((mask * magic) & 0xFF00000000000000ULL) < 6) continue;
 
         // Verify the magic number
         fill(used.begin(), used.end(), 0ULL);
@@ -246,7 +246,7 @@ void FindBishopMagic(int sq) {
     cout << "Magic generation failed for bishop square " << sq << endl;
 }
 
-void GenerateRookTables(){
+inline void GenerateRookTables(){
     for(int i=0;i<64;++i){
         Bitboard piece=(1ULL << i);
         Bitboard Blockers = ComputeRookBlockers(piece);
@@ -271,7 +271,7 @@ void GenerateRookTables(){
     }
 }
 
-void GenerateBishopTables(){
+inline void GenerateBishopTables(){
     for(int i=0;i<64;++i){
         Bitboard piece=(1ULL << i);
         Bitboard Blockers = ComputeBishopBlockers(piece);
@@ -296,7 +296,7 @@ void GenerateBishopTables(){
     }
 }
 
-void GenerateLookupTables(){
+inline void GenerateLookupTables(){
     GenerateRookTables();
     GenerateBishopTables();
 }
