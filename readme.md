@@ -67,10 +67,9 @@ python3 LichessBot/LichessBot.py
 * `src/Misc.h`: Printing moves, parsing moves, Parse FEN, etc.
 
 * `Lichess Bot/LichessBot.py`: Python script for Lichess API integration.
-* `Lichess Bot/OpeningBook.bin`: An opening book that bot.py uses(not connected to the engine).
+* `Lichess Bot/OpeningBook.bin`: The [Cerebellum](https://zipproth.de/Brainfish/Cerebellum_Light_3Merge_200916.7z) Opening Book. This is managed by git LFS. Not connected to the engine, it is handled independantly by `LichessBot.py`.
 * `Lichess Bot/requirements.txt`: Python pip requirements file to run the bot.
 * `Lichess Bot/token.txt`: (User-provided) API token for Lichess.
 
-* `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the 'pgns' directory.
-* `pgns/*.pgn`: 249 PGN files downloaded from PGNMentor to make an opening book.
+* `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the `pgns` directory. NOTE - You will have to download your own PGN files in the `pgns` directory if you want to make your own opening book.
 * `test/`: A folder containing a script to check if the new version of the engine is actually better.

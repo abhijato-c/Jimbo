@@ -32,6 +32,9 @@ def CreateBook(pgn_paths, output_path, depth_limit):
                 except: continue
                 if not game: break
 
+                # Ignore 'bad' games
+                if sum(1 for _ in game.mainline_moves()) < 100: continue
+
                 TotalGames += 1
                 board = game.board()
                 
@@ -52,9 +55,12 @@ def CreateBook(pgn_paths, output_path, depth_limit):
 
     for key, moves in BookEntries.items():
         MaxWeight = max(moves.values())
+        if MaxWeight < 5: continue
+        
         for move, weight in moves.items():
-            normalized = int(weight / MaxWeight * 65535)
-            if normalized == 0: continue
+            normalized = int(weight / MaxWeight * 60000)
+            print(weight, MaxWeight)
+            if normalized < 5000: continue
 
             BinaryEntries.append({
                 "key": key,
