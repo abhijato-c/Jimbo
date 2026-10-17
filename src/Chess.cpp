@@ -17,7 +17,6 @@ bool isConvertibleToInt(const string& str, int& value) {
 }
 
 void RunSearch(chess brd, int TimeLimit, int DepthLimit){
-    StopSignal = false;
     Move best = 0;
 
     if (DepthLimit == 0) best = IterativeDeepening(brd, TimeLimit, INT_MAX);
@@ -28,8 +27,9 @@ void RunSearch(chess brd, int TimeLimit, int DepthLimit){
 }
 
 void StopSearch(){
-    StopSignal = true;
+    StopSignal.store(true);
     if (SearchThread.joinable()) SearchThread.join();
+    StopSignal.store(false);
 }
 
 int main(){
