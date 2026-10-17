@@ -64,6 +64,23 @@ struct chess {
     bool turn = true;
 };
 
+struct MoveList {
+    Move moves[256];
+    int count = 0;
+    
+    inline void push_back(Move m) { moves[count++] = m; }
+    
+    // Functions required for foreach loop
+    Move* begin() { return moves; }
+    Move* end() { return moves + count; }
+    const Move* begin() const { return moves; }
+    const Move* end() const { return moves + count; }
+
+    int size() const { return count; }
+    Move operator[](int index) const { return moves[index]; }
+    Move& operator[](int index) { return moves[index]; }
+};
+
 inline int nodes = 0;
 
 inline Bitboard RookBlockers[64];
