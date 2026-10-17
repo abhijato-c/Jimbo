@@ -52,7 +52,14 @@ inline void prtmv(const Move &mv){
     cout<<endl;
 }
 
-inline void ParseFEN(string fen, chess &b){
+inline void ParseFEN(string FullFEN, chess &b){
+    size_t spacePos = FullFEN.find(' ');
+    string fen = FullFEN.substr(0, spacePos);
+    char player = FullFEN[spacePos + 1];
+
+    if (player == 'w') b.turn = true;
+    else b.turn = false;
+
     b.wp=0ULL; b.wr=0ULL; b.wn=0ULL; b.wb=0ULL; b.wq=0ULL; b.wk=0ULL;
     b.bp=0ULL; b.br=0ULL; b.bn=0ULL; b.bb=0ULL; b.bq=0ULL; b.bk=0ULL;
     for (char c : fen) {

@@ -77,10 +77,10 @@ def BestMove(fen):
         if output:
             print("ob:"+output)
             return output
-    eng.stdin.write(fen[0]+"\n")
-    eng.stdin.write(fen[1]+'\n')
+    eng.stdin.write("position fen " + fen[0]+" "+fen[1] + '\n')
+    eng.stdin.write("go movetime 3000"+'\n')
     eng.stdin.flush()
-    output = eng.stdout.readline()[:-1]
+    output = eng.stdout.readline()[:-1].split(' ')[1]
     print("eng:"+output)
     return output
 

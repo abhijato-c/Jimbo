@@ -1,3 +1,4 @@
+#include <sstream>
 #include "Init.cpp"
 #include "MoveGen.cpp"
 #include "MovePiece.cpp"
@@ -167,21 +168,61 @@ int main(){
     generate_rook_tables();
     generate_bishop_tables();
     
-    int tim=3000;
+    string line, command;
     chess brd;
-    string fen;
-    char t;
-    while(true){
-        cin>>fen;
-        cin>>t;
-        if (t=='w')
-            brd.turn=true;
-        else
-            brd.turn=false;
-        
-        ParseFEN(fen,brd);
-        //prtmv(BestMove(brd, 6));
-        prtmv(iterative_deepening(brd,tim));
+
+    while (getline(cin, line)) {
+        stringstream ss(line);
+        ss >> command;
+
+        if (command == "uci") {cout << "uciok" << endl;} 
+        else if (command == "isready") {cout << "readyok" << endl;} 
+        else if (command == "position") {
+            string sub;
+            ss >> sub;
+            if (sub == "startpos") {ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w", brd);} 
+            else if (sub == "fen") {
+                // todo: change to i<6 on full fen implementation
+                string fenStr, part;
+                for(int i=0; i<2; i++) { 
+                    ss >> part; 
+                    fenStr += part + " "; 
+                }
+                ParseFEN(fenStr, brd);
+            }
+            
+            // todo: moves suffix - position startpos moves e2e4
+            string movesKeyword;
+            if (ss >> movesKeyword && movesKeyword == "moves") {
+                string moveStr;
+                while (ss >> moveStr) {
+                    // Move m = parseMove(moveStr, brd);
+                }
+            }
+        } 
+        else if (command == "go") {
+            int lim = 3000; // Default 3s
+            string sub;
+            Move best;
+            // todo: multiple constraints
+            if(ss >> sub) {
+                if (sub == "movetime") {
+                    ss >> lim;
+                    best = iterative_deepening(brd, lim);
+                }
+                else if (sub == "depth") {
+                    ss >> lim;
+                    best = BestMove(brd, lim);
+                }
+            }
+            else {
+                best = iterative_deepening(brd, lim);
+            }
+            cout << "bestmove ";
+            prtmv(best);
+        } 
+        //todo: stop command
+        else if (command == "quit") { break; }
     }
     return 0;
 }
