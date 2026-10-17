@@ -157,9 +157,9 @@ class LichessBot:
         return response.json().get('nowPlaying', [])
 
     def CalculateTimeLimit(self, SecondsLeft: int, MovesPlayed: int) -> float:
-        MovesLeft = max(80 - MovesPlayed, 20)
+        MovesLeft = max(60 - MovesPlayed, 15)
         Time = SecondsLeft / MovesLeft - 0.2
-        Time = max(0.2, Time)
+        Time = max(0.1, Time)
         if Time > 60: Time = 5
         return Time
 
@@ -233,7 +233,7 @@ class LichessBot:
 
                 # Compute and Send Move
                 TimeLeft = State['wtime'] if Color == chess.WHITE else State['btime']
-                limit = self.CalculateTimeLimit(TimeLeft / 1000, len(board.move_stack))
+                limit = self.CalculateTimeLimit(TimeLeft / 1000, board.fullmove_number)
                 logger.info(f"Game {GameID} | Time: {limit:.2f}s")
                 BestMove = self.GetBestMove(board.fen(), limit, Engine)
                 if BestMove: self._request('POST', 'move', GameID, BestMove)
