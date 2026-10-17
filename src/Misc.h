@@ -7,30 +7,10 @@
 inline int StaticEval(const chess &b){
     ++nodes;
     if (b.turn)
-        return ((popcnt(b.wb)*4) +
-                (popcnt(b.wn)*3) +
-                (popcnt(b.wp)) +
-                (popcnt(b.wq)*9) +
-                (popcnt(b.wk)*70) +
-                (popcnt(b.wr)*5) -
-                (popcnt(b.bb)*4) -
-                (popcnt(b.bn)*3) -
-                (popcnt(b.bp)) -
-                (popcnt(b.bq)*9) -
-                (popcnt(b.br)*5)-
-                (popcnt(b.bk)*70));
-    return ((popcnt(b.bb)*4) +
-                (popcnt(b.bn)*3) +
-                (popcnt(b.bp)) +
-                (popcnt(b.bq)*9) +
-                (popcnt(b.bk)*70) +
-                (popcnt(b.br)*5) -
-                (popcnt(b.wb)*4) -
-                (popcnt(b.wn)*3) -
-                (popcnt(b.wp)) -
-                (popcnt(b.wq)*9) -
-                (popcnt(b.wr)*5)-
-                (popcnt(b.wk)*70));
+        return ((popcnt(b.wb)*4) + (popcnt(b.wn)*3) + (popcnt(b.wp)) + (popcnt(b.wq)*9) + (popcnt(b.wr)*5) -
+                (popcnt(b.bb)*4) - (popcnt(b.bn)*3) - (popcnt(b.bp)) - (popcnt(b.bq)*9) - (popcnt(b.br)*5));
+    return ((popcnt(b.bb)*4) + (popcnt(b.bn)*3) + (popcnt(b.bp)) + (popcnt(b.bq)*9) + (popcnt(b.br)*5) -
+            (popcnt(b.wb)*4) - (popcnt(b.wn)*3) - (popcnt(b.wp)) - (popcnt(b.wq)*9) - (popcnt(b.wr)*5));
 }
 
 inline string MoveToStr(const Move move){

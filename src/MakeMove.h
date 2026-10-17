@@ -9,9 +9,10 @@
 // TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
 
 inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start = chrono::high_resolution_clock::now(), int64_t time = INT64_MAX){
-    if(depth == 1) return StaticEval(b);
     //check for game over, higher eval for delayed checkmate
-    if(b.wk == 0 || b.bk == 0) return (-128 - depth);
+    if(b.wk == 0 || b.bk == 0) return (-inf + 30 - depth);
+    
+    if(depth == 1) return StaticEval(b);
 
     chess rd;
     MoveList Moves = PseudoLegals(b);
@@ -53,61 +54,12 @@ inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start 
     return alpha;
 }
 
-
-/*inline Move BestMove(const chess &b, int MaxDepth){
-    chess rd;
-    int eval;
-    int alpha = -inf;
-    int beta = inf;
-    Move Best = 0;
-    MoveList Moves = PseudoLegals(b);
-
-    // Compute static evals of each position for move ordering
-    int StaticEvals[Moves.size()];
-    for (int i=0; i<Moves.size(); ++i){
-        Move m = Moves[i];
-        int score = 0;
-    
-        // Capture check
-        if (b.pieces & (1ULL << ((m >> 6) & 63))) {
-            score += 100;
-        }
-        // Promotions
-        score += ((m >> 12) & 7) * 100;
-
-        StaticEvals[i] = score;
-    }
-
-    // Evaluate positions in order of static evals
-    for(int i=0; i<Moves.size(); ++i){
-        // Find position with highest static eval
-        int MaxEval = StaticEvals[0];
-        int MaxIndex = 0;
-        for(int j=1; j<Moves.size(); ++j){
-            if(StaticEvals[j] > MaxEval){ 
-                MaxEval = StaticEvals[j]; 
-                MaxIndex=j;
-            }
-        }
-        StaticEvals[MaxIndex] = -inf;
-        rd=b;
-        move_piece(Moves[MaxIndex], rd);
-        eval = -MiniMax(rd, MaxDepth, -beta, -alpha);
-        if(eval>alpha){
-            alpha = eval;
-            Best = Moves[MaxIndex];
-        }
-        if(alpha>=beta) break;
-    }
-    return Best;
-}*/
-
 inline Move IterativeDeepening(const chess &b, int64_t time, int Mdepth){
     timept StartTime = chrono::high_resolution_clock::now();
-    int CurrentDepth=2;
+    int CurrentDepth = 2;
     Move OverallBestMove = 0;
     int BestEval = -inf;
-    while(TimeElapsed(StartTime) < time && CurrentDepth <= Mdepth && !StopSignal.load()){
+    while(TimeElapsed(StartTime) < time && CurrentDepth <= Mdepth && !StopSignal.load() && !(abs(BestEval) >= 300 && CurrentDepth > 2)){
         chess rd;
         int eval;
         int bestmove = 0;
@@ -158,7 +110,7 @@ inline Move IterativeDeepening(const chess &b, int64_t time, int Mdepth){
         }
         BestEval = alpha;
         OverallBestMove = bestmove;
-        cout << "Depth: " << CurrentDepth << ", Move: " << MoveToStr(OverallBestMove) << endl;
+        cout << "info Depth: " << CurrentDepth << ", Move: " << MoveToStr(OverallBestMove) << endl;
         ++CurrentDepth;
     }
     return OverallBestMove;

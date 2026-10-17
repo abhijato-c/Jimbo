@@ -192,6 +192,7 @@ class LichessBot:
         Color = None
         logger.info(f"Streaming Game: {GameID}")
         Engine = self.SpawnEngine()
+        fen = "startpos"
         with self.EnginesLock: self.ActiveEngines.append(Engine)
 
         with self.session.get(url, stream=True) as response:
@@ -206,6 +207,7 @@ class LichessBot:
                 # Initial game state
                 if EventType == 'gameFull':
                     Color = chess.WHITE if event['white'].get('id') == self.Username else chess.BLACK
+                    fen = event["initialFen"]
                     State = event['state']
 
                 # Move made
@@ -222,7 +224,8 @@ class LichessBot:
                 
                 # Set up board
                 moves = State.get('moves')
-                board = chess.Board()
+                if fen == "startpos": board = chess.Board()
+                else: board = chess.Board(fen = fen)
                 for move in moves.split(): board.push_uci(move)
                 
                 # Skip if not our turn
