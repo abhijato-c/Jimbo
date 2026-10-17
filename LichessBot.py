@@ -1,10 +1,12 @@
 import chess
 import chess.polyglot
 import requests
-import json
 import backoff
+import json
+from pathlib import Path
 import subprocess
 import time
+import platform
 
 ENDPOINTS = {
     "profile": "https://lichess.org/api/account",
@@ -28,8 +30,14 @@ ENDPOINTS = {
     "listchlng": "https://lichess.org/api/challenge"
 }
 
-token=str(open('token.txt','r').read().strip())
-header={"Authorization": f"Bearer {token}"}
+ENGINE_PATH = ''
+if platform.system() == 'Windows':
+    ENGINE_PATH = './Engine.exe'
+else:
+    ENGINE_PATH = './Engine'
+
+OPENING_BOOK_PATH = 'OpeningBook.bin'
+TOKEN_FILE_PATH = 'token.txt'
 
 ChallengeCooldown = 5
 ChallengeHit = 0
@@ -95,11 +103,31 @@ def BestMove(fen):
 def GetChallenges():
     return [x['id'] for x in get("listchlng").json()['in'] if x['rated']==False and x['speed']=='correspondence']
 
+def UpgradeAccount():
+    return post('upgrade')
+
 
 if __name__ == '__main__':
-    print('Spawning engine and reading opening book', end='   ')
-    eng = subprocess.Popen(['./Engine.out'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-    OpeningBook = chess.polyglot.MemoryMappedReader('OpeningBook.bin')
+    if not Path(TOKEN_FILE_PATH).is_file():
+        print(f"Error: Token file '{TOKEN_FILE_PATH}' not found!")
+        print("Please create a file named 'token.txt' containing your Lichess Bot API token.")
+        exit(1)
+    if not Path(ENGINE_PATH).is_file():
+        print(f"Error: Engine file '{ENGINE_PATH}' not found!")
+        print(f"Please place your chess engine in {ENGINE_PATH}.")
+        exit(1)
+    if not Path(OPENING_BOOK_PATH).is_file():
+        print(f"Warning: Opening book file '{OPENING_BOOK_PATH}' not found!")
+        print("The bot will function without an opening book!")
+    
+    token=str(open(TOKEN_FILE_PATH,'r').read().strip())
+    header={"Authorization": f"Bearer {token}"}
+
+    UpgradeAccount()
+
+    print('Setting up bot', end='   ')
+    eng = subprocess.Popen([ENGINE_PATH], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    if Path(OPENING_BOOK_PATH).is_file(): OpeningBook = chess.polyglot.MemoryMappedReader(OPENING_BOOK_PATH)
     print('Done!')
 
     print("Your bot is online and ready to accept challenges!")
@@ -107,14 +135,20 @@ if __name__ == '__main__':
         # Accept Challenges
         if time.time()-ChallengeHit > ChallengeCooldown:
             ChallengeHit = time.time()
-            for challenge in GetChallenges():
-                post('accept',[challenge])
-                print('Accepted challenge ', challenge)
+            try:
+                for challenge in GetChallenges():
+                    post('accept',[challenge])
+                    print('Accepted challenge ', challenge)
+            except Exception as e:
+                pass
         
         # Play moves
         if time.time()-MoveHit > MoveCooldown:
             MoveHit = time.time()
-            for game in [x for x in OngoingGames() if x['isMyTurn']]:
-                print('Game: ' + game['gameId'] + ' FEN: ' + game['fen'])
-                move = BestMove(game['fen'])
-                PlayMove(game['gameId'], move)
+            try:
+                for game in [x for x in OngoingGames() if x['isMyTurn']]:
+                    print('Game: ' + game['gameId'] + ' FEN: ' + game['fen'])
+                    move = BestMove(game['fen'])
+                    PlayMove(game['gameId'], move)
+            except Exception as e:
+                pass

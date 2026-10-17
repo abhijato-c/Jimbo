@@ -4,32 +4,42 @@ A C++ chess engine featuring an Alpha-Beta pruning search with iterative deepeni
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Compile engine locally
 
-* **C++ Compiler**: A modern compiler supporting C++11 or higher (e.g., `g++`).
-* **Python 3.x**: Required for the Lichess integration.
-* **Lichess Bot Token**: A personal API token from Lichess with "Play as a bot" permissions.
-
-### Installation & Compilation
-
-To achieve maximum performance, the engine should be compiled with aggressive optimizations. Use the following command:
+You can download a binary from the releases to use. If you want to compile the engine locally for best performance, use the following command:
 
 ```bash
-g++ --param max-inline-insns-single=10000 --param large-function-growth=1000 -march=native -Ofast -Wall -Wextra './src/Chess.cpp' -o '.Engine.out'
+g++ -march=native -Ofast -Wall -Wextra './src/Chess.cpp' -o '.Engine.exe'
 
 ```
+On linux/mac, remove the .exe from the output.
+Go through the UCI command support of the readme to see what commands are available, since not all commands are supported yet.
 
 ### Setting up the Lichess Bot
 
-1. Create a file named `token.txt` in the root directory.
-2. Paste your Lichess API token into `token.txt`.
-3. Run the bot script:
+1. Ensure you have python installed.
+2. Download the packages in `requirements.txt`
+3. Make a new Lichess account and create an API token with all 'Bot' permissions. This token will be pasted in the `token.txt` file. For help, just look up how to make a lichess bot account. There is already extensive documentation on that.
+4. Create a file named `token.txt` in the root directory.
+5. Paste your Lichess API token into `token.txt`.
+7. Place your engine and opening book in the same directory as the script, and ensure they are named `Engine` and `OpeningBook.bin` respectively. You can get the opening book from this repo, and just download a suitable binary and remane it to `Engine`. You can change these names inside the script, if you wish to.
+6. Run the bot script:
 ```bash
-python3 bot.py
+python3 LichessBot.py
 
 ```
 
+## 🛠 UCI Command Support
 
+| Command | Description |
+| --- | --- |
+| `uci` | Returns `uciok`, signifying the engine is ready. |
+| `isready` | Synchronizes the engine with the GUI. |
+| `position [fen / startpos]` | Sets up the board state. `moves` command not supported |
+| `go [movetime / depth]` | Starts the engine calculation. Use either movetime or depth, not both together. Multiple constraints not supported. |
+| `quit` | Exits the engine. |
+
+`stop` command not supported.
 
 ## 🧠 Engine Features
 
@@ -44,16 +54,6 @@ python3 bot.py
 * **UCI Support**: Supports standard commands including `uci`, `isready`, `position` (FEN and startpos), and `go` (depth and movetime).
 * **Performance Tools**: Includes a built-in `profile()` function to measure Nodes Per Second (NPS) and average time per move.
 * **Lookup Tables**: Utilizes pre-generated tables for sliders (Rooks and Bishops) to accelerate move generation.
-
-## 🛠 UCI Command Support
-
-| Command | Description |
-| --- | --- |
-| `uci` | Identifies the engine and returns `uciok`. |
-| `isready` | Synchronizes the engine with the GUI. |
-| `position [fen / startpos]` | Sets up the board state. |
-| `go [movetime / depth]` | Starts the engine calculation. |
-| `quit` | Exits the engine. |
 
 ## 📂 Project Structure
 
