@@ -1,6 +1,6 @@
 # Chess Engine & Lichess Bot
 
-A C++, UCI-compatible chess engine featuring an Alpha-Beta pruning search with iterative deepening. This project includes a Python wrapper to deploy the engine as a live bot on Lichess.
+A C++, UCI-compatible chess engine featuring an Alpha-Beta pruning search with iterative deepening. This project includes a Python script to deploy the engine as a live bot on Lichess.
 
 ## Getting Started
 
@@ -17,7 +17,7 @@ Go through the UCI command support of the readme to see what commands are availa
 
 ### Setting up the Lichess Bot
 
-The code and files required for the Lichess bot is present in the `Lichess Bot` directory. Instructions here are in reference to that.
+The code and files required for the Lichess bot is present in the `LichessBot` directory. Instructions here are in reference to that.
 
 1. Ensure you have python installed.
 2. Download the packages in `requirements.txt`
@@ -27,7 +27,7 @@ The code and files required for the Lichess bot is present in the `Lichess Bot` 
 7. Place your engine and opening book in the same directory as the script, and ensure they are named `Engine` and `OpeningBook.bin` respectively. You can get the opening book from this repo, and just download a suitable binary and remane it to `Engine`. You can change these names inside the script, if you wish to.
 6. Run the bot script:
 ```bash
-python3 LichessBot.py
+python3 LichessBot/LichessBot.py
 
 ```
 

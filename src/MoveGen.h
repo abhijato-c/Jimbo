@@ -47,11 +47,10 @@ inline void BKmoves(const chess &b, MoveList &Moves){
 
 inline void WNmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.wn;
-    int i = -1;
-    while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+    int i;
+    while(iter != 0){
+        i = ctz(iter);
+        iter = blsr(iter);
 
         if ((((1ULL << i) & clear_a & clear_b) >> 6) &~ b.wpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 6) << 6 | i);
@@ -74,11 +73,10 @@ inline void WNmoves(const chess &b, MoveList &Moves){
 
 inline void BNmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.bn;
-    int i = -1;
-    while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+    int i;
+    while(iter != 0){
+        i = ctz(iter);
+        iter = blsr(iter);
 
         if ((((1ULL << i) & clear_a & clear_b) >> 6) &~ b.bpcs)
             Moves.push_back((1 << 15) | ctz((1ULL << i) >> 6) << 6 | i);
@@ -101,11 +99,10 @@ inline void BNmoves(const chess &b, MoveList &Moves){
 
 inline void WPmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.wp;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         if (((1ULL << i) << 8) &~ b.pieces)
             Moves.push_back(ctz((1ULL << i) << 8) << 6 | i);
@@ -120,11 +117,10 @@ inline void WPmoves(const chess &b, MoveList &Moves){
 
 inline void BPmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.bp;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         if (((1ULL << i) >> 8) &~ b.pieces)
             Moves.push_back(ctz((1ULL << i) >> 8) << 6 | i);
@@ -139,11 +135,10 @@ inline void BPmoves(const chess &b, MoveList &Moves){
 
 inline void WBmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.wb;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         Bitboard it;
         #ifdef USE_BMI2
@@ -152,11 +147,10 @@ inline void WBmoves(const chess &b, MoveList &Moves){
             it = (BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.wpcs);
         #endif
 
-        int j = -1;
+        int j;
         while(it!=0){
-            j += ctz(it) + 1;
-            it >>= ctz(it);
-            it >>= 1;
+            j = ctz(it);
+            it = blsr(it);
 
             Moves.push_back((2 << 15) | (j << 6) | i);
         }
@@ -165,11 +159,10 @@ inline void WBmoves(const chess &b, MoveList &Moves){
 
 inline void BBmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.bb;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         Bitboard it;
         #ifdef USE_BMI2
@@ -178,11 +171,10 @@ inline void BBmoves(const chess &b, MoveList &Moves){
             it = (BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.bpcs);
         #endif
         
-        int j = -1;
+        int j;
         while(it!=0){
-            j += ctz(it) + 1;
-            it >>= ctz(it);
-            it >>= 1;
+            j = ctz(it);
+            it = blsr(it);
 
             Moves.push_back((2 << 15) | (j << 6) | i);
         }
@@ -191,11 +183,10 @@ inline void BBmoves(const chess &b, MoveList &Moves){
 
 inline void WRmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.wr;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         Bitboard it;
         #ifdef USE_BMI2
@@ -204,11 +195,10 @@ inline void WRmoves(const chess &b, MoveList &Moves){
             it = (RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.wpcs);
         #endif
 
-        int j = -1;
+        int j;
         while(it!=0){
-            j += ctz(it) + 1;
-            it >>= ctz(it);
-            it >>= 1;
+            j = ctz(it);
+            it = blsr(it);
 
             Moves.push_back((3 << 15) | (j << 6) | i);
         }
@@ -217,11 +207,10 @@ inline void WRmoves(const chess &b, MoveList &Moves){
 
 inline void BRmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.br;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         Bitboard it;
         #ifdef USE_BMI2
@@ -230,11 +219,10 @@ inline void BRmoves(const chess &b, MoveList &Moves){
             it = (RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.bpcs);
         #endif
 
-        int j = -1;
+        int j;
         while(it!=0){
-            j += ctz(it) + 1;
-            it >>= ctz(it);
-            it >>= 1;
+            j = ctz(it);
+            it = blsr(it);
 
             Moves.push_back((3 << 15) | (j << 6) | i);
         }
@@ -243,11 +231,10 @@ inline void BRmoves(const chess &b, MoveList &Moves){
 
 inline void WQmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.wq;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         Bitboard it;
         #ifdef USE_BMI2
@@ -256,11 +243,10 @@ inline void WQmoves(const chess &b, MoveList &Moves){
             it = ((RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] | BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])]) &~ b.wpcs);
         #endif
 
-        int j = -1;
-        while(it != 0){
-            j += ctz(it) + 1;
-            it >>= ctz(it);
-            it >>= 1;
+        int j;
+        while(it!=0){
+            j = ctz(it);
+            it = blsr(it);
 
             Moves.push_back((4 << 15) | (j << 6) | i);
         }
@@ -269,11 +255,10 @@ inline void WQmoves(const chess &b, MoveList &Moves){
 
 inline void BQmoves(const chess &b, MoveList &Moves){
     Bitboard iter = b.bq;
-    int i = -1;
+    int i;
     while(iter!=0){
-        i += ctz(iter) + 1;
-        iter >>= ctz(iter);
-        iter >>= 1;
+        i = ctz(iter);
+        iter = blsr(iter);
 
         Bitboard it;
         #ifdef USE_BMI2
@@ -282,11 +267,10 @@ inline void BQmoves(const chess &b, MoveList &Moves){
             it = ((RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] | BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])]) &~ b.bpcs);
         #endif
 
-        int j = -1;
+        int j;
         while(it!=0){
-            j += ctz(it) + 1;
-            it >>= ctz(it);
-            it >>= 1;
+            j = ctz(it);
+            it = blsr(it);
 
             Moves.push_back((4 << 15) | (j << 6) | i);
         }

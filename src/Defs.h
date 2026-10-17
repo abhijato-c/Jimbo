@@ -11,6 +11,7 @@
     #include <immintrin.h>
     #define pext(val, mask) _pext_u64(val, mask)
 	#define pdep(val, mask) _pdep_u64(val, mask)
+	#define blsr(val) _blsr_u64(val)
 #endif
 
 typedef std::chrono::high_resolution_clock::time_point timept;
@@ -125,8 +126,8 @@ inline int64_t TimeElapsed(timept t){
 	return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - t).count();
 }
 
-inline int ctz(const Bitboard b) { return std::countr_zero(b); }
-inline int popcnt(const Bitboard b) { return std::popcount(b); }
+inline int ctz(const Bitboard b) { return countr_zero(b); }
+inline int popcnt(const Bitboard b) { return popcount(b); }
 #ifndef USE_BMI2
 	inline Bitboard pdep(Bitboard val, Bitboard mask) {
 		Bitboard res = 0;
@@ -137,6 +138,7 @@ inline int popcnt(const Bitboard b) { return std::popcount(b); }
 		}
 		return res;
 	}
+	inline Bitboard blsr(Bitboard val) { return val & (val - 1); }
 #endif
 
 #endif

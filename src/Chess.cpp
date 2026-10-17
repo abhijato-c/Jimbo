@@ -8,7 +8,6 @@
 #include <atomic>
 
 std::atomic<bool> StopSignal(false);
-std::atomic<bool> IsSearching(false);
 std::thread SearchThread;
 
 bool isConvertibleToInt(const string& str, int& value) {
@@ -18,7 +17,6 @@ bool isConvertibleToInt(const string& str, int& value) {
 }
 
 void RunSearch(chess brd, int TimeLimit, int DepthLimit){
-    IsSearching = true;
     StopSignal = false;
 
     Move best = 0;
@@ -29,7 +27,6 @@ void RunSearch(chess brd, int TimeLimit, int DepthLimit){
     else  best = IterativeDeepening(brd, TimeLimit, DepthLimit);
 
     cout << "bestmove " << MoveToStr(best) << endl;
-    IsSearching = false;
 }
 
 void StopSearch(){
@@ -113,7 +110,7 @@ int main(){
             SearchThread = thread(RunSearch, brd, TimeLimit, DepthLimit);
         }
         else if (cmd == "ucinewgame") {
-            // Clear search history/Transposition Tables, dont exist now so ignore to prevent illegal cmd
+            // Clear Transposition Tables
         }
 
         else if (cmd == "setoption") {
