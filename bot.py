@@ -4,6 +4,7 @@ import requests
 import json
 import backoff
 import subprocess
+import time
 
 ENDPOINTS = {
     "profile": "https://lichess.org/api/account",
@@ -27,13 +28,13 @@ ENDPOINTS = {
     "listchlng": "https://lichess.org/api/challenge"
 }
 
-ChallengeCooldown = 5
-LastChallengeHit = 0
-MoveCooldown = 0.1
-LastMoveHit = 0
-
 token=str(open('token.txt','r').read().strip())
 header={"Authorization": f"Bearer {token}"}
+
+ChallengeCooldown = 5
+ChallengeHit = 0
+MoveCooldown = 1
+MoveHit = 0
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=5)
 def post(endpoint,args=[]):
@@ -93,7 +94,7 @@ def BestMove(fen):
     return move
 
 def GetChallenges():
-    return [x['id'] for x in get("listchlng").json()['in']]
+    return [x['id'] for x in get("listchlng").json()['in'] if x['rated']==False and x['speed']=='correspondence']
 
 
 if __name__ == '__main__':
@@ -105,12 +106,16 @@ if __name__ == '__main__':
     print("Your bot is online and ready to accept challenges!")
     while True:
         # Accept Challenges
-        for challenge in GetChallenges():
-            post('accept',[challenge])
-            print('Accepted challenge ', challenge)
+        if time.time()-ChallengeHit > ChallengeCooldown:
+            ChallengeHit = time.time()
+            for challenge in GetChallenges():
+                post('accept',[challenge])
+                print('Accepted challenge ', challenge)
         
         # Play moves
-        for game in [x for x in OngoingGames() if x['isMyTurn']]:
-            print('Game: ' + game['gameId'] + ' FEN: ' + game['fen'])
-            move = BestMove(game['fen'])
-            PlayMove(game['gameId'], move)
+        if time.time()-MoveHit > MoveCooldown:
+            MoveHit = time.time()
+            for game in [x for x in OngoingGames() if x['isMyTurn']]:
+                print('Game: ' + game['gameId'] + ' FEN: ' + game['fen'])
+                move = BestMove(game['fen'])
+                PlayMove(game['gameId'], move)
