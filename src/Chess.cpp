@@ -203,7 +203,7 @@ int main(){
         else if (command == "go") {
             int lim = 3000; // Default 3s
             string sub;
-            Move best;
+            Move best = 0;
             // todo: multiple constraints, wtime btime
             if(ss >> sub) {
                 if (sub == "movetime") {
