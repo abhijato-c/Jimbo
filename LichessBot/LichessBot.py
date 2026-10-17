@@ -15,8 +15,8 @@ import backoff
 
 BASE_URL = "https://lichess.org/"
 LOG_LEVEL = logging.INFO
-TOKEN_FILE_PATH = Path('Lichess Bot/token.txt')
-OPENING_BOOK_PATH = Path('Lichess Bot/OpeningBook.bin')
+TOKEN_FILE_PATH = Path('LichessBot/token.txt')
+OPENING_BOOK_PATH = Path('LichessBot/OpeningBook.bin')
 ENDPOINTS = {
     "profile": "api/account",
     "playing": "api/account/playing",
@@ -40,9 +40,9 @@ ENDPOINTS = {
 }
 
 if platform.system() == 'Windows':
-    ENGINE_PATH = Path('./Lichess Bot/Engine.exe')
+    ENGINE_PATH = Path('./LichessBot/Engine.exe')
 else:
-    ENGINE_PATH = Path('./Lichess Bot/Engine')
+    ENGINE_PATH = Path('./LichessBot/Engine')
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=LOG_LEVEL,  datefmt='%H:%M:%S', force=True)
 logger = logging.getLogger(__name__)

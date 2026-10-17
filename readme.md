@@ -1,8 +1,8 @@
 # Chess Engine & Lichess Bot
 
-A C++ chess engine featuring an Alpha-Beta pruning search with iterative deepening and a (minimal, under dev)Universal Chess Interface (UCI). This project includes a Python wrapper to deploy the engine as a live bot on Lichess.
+A C++, UCI-compatible chess engine featuring an Alpha-Beta pruning search with iterative deepening. This project includes a Python wrapper to deploy the engine as a live bot on Lichess.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Compile engine locally
 
@@ -13,7 +13,7 @@ g++ -march=native -Ofast -Wall -Wextra './src/Chess.cpp' -o '.Engine.exe'
 
 ```
 On linux/mac, remove the .exe from the output.
-Go through the UCI command support of the readme to see what commands are available, since not all commands are supported yet.
+Go through the UCI command support of the readme to see what commands are available.
 
 ### Setting up the Lichess Bot
 
@@ -31,23 +31,22 @@ python3 LichessBot.py
 
 ```
 
-## 🛠 UCI Command Support
+## UCI Command Support
 
 | Command | Description |
 | --- | --- |
 | `uci` | Returns `uciok`, signifying the engine is ready. |
-| `isready` | Synchronizes the engine with the GUI. |
-| `position [fen / startpos]` | Sets up the board state. `moves` command not supported |
-| `go [movetime / depth]` | Starts the engine calculation. Use either movetime or depth, not both together. Multiple constraints not supported. |
+| `isready` | Returns `readyok`, no difference compared to `uci` command. |
+| `position [fen / startpos]` | Sets up the board state. `moves` command not supported yet. |
+| `go [movetime / depth]` | Starts the engine calculation. If multiple constratints are provided, search stops at whichever is reached first. |
+| `stop` | Terminates the search and instantly returns the current best move. |
 | `quit` | Exits the engine. |
 
-`stop` command not supported.
-
-## 🧠 Engine Features
+## Engine Features
 
 ### Search Algorithms
 
-* **Iterative Deepening**: Dynamically manages time by searching deeper plies until the time limit (`movetime`) is reached.
+* **Iterative Deepening**: Dynamically manages time by searching deeper plies until the time limit or max depth is reached.
 * **MiniMax with Alpha-Beta Pruning**: Efficiently prunes the search tree to explore deeper lines by eliminating branches that cannot improve the outcome.
 * **Move Ordering**: Uses static evaluations to order moves, significantly increasing the efficiency of the Alpha-Beta pruning.
 
@@ -57,18 +56,21 @@ python3 LichessBot.py
 * **Performance Tools**: Includes a built-in `profile()` function to measure Nodes Per Second (NPS) and average time per move.
 * **Lookup Tables**: Utilizes pre-generated tables for sliders (Rooks and Bishops) to accelerate move generation.
 
-## 📂 Project Structure
+## Project Structure
 
-* `src/Chess.cpp`: The main engine logic, search routines, and UCI loop.
-* `src/Init.cpp`: Initialization routines.
-* `src/MoveGen.cpp`: Pseudo-legal move generation.
-* `src/MovePiece.cpp`: Logic for updating board state after moves.
-* `src/LookupTables.cpp`: Magic bitboard or sliding piece lookup generation.
-* `src/Misc.cpp`: Printing moves, Parse FEN, etc.
+* `src/Chess.cpp`: The UCI loop.
+* `src/MakeMove.h`: Search logic(iterative deepening and minimax).
+* `src/Defs.h`: Global variable and utility function definitions.
+* `src/MoveGen.h`: Move generator.
+* `src/MovePiece.h`: Logic for updating board state after moves.
+* `src/LookupTables.h`: Initializes the Magic/Pext bitboards for sliding piece lookups.
+* `src/Misc.h`: Printing moves, parsing moves, Parse FEN, etc.
+
 * `Lichess Bot/LichessBot.py`: Python script for Lichess API integration.
 * `Lichess Bot/OpeningBook.bin`: An opening book that bot.py uses(not connected to the engine).
 * `Lichess Bot/requirements.txt`: Python pip requirements file to run the bot.
 * `Lichess Bot/token.txt`: (User-provided) API token for Lichess.
+
 * `MakeOpeningBook.py`: Makes a polyglot opening book from the PGN files in the 'pgns' directory.
 * `pgns/*.pgn`: 249 PGN files downloaded from PGNMentor to make an opening book.
 * `test/`: A folder containing a script to check if the new version of the engine is actually better.
