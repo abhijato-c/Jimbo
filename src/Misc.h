@@ -47,21 +47,21 @@ inline bool IsAttacked(const chess &b, int sq, bool byWhite){
 
 inline string MoveToStr(const Move move){
     int from = (move & 63);
-    int to = ((move>>6) & 63);
-    int prom = ((move>>12) & 7);
+    int to = ((move >> 6) & 63);
+    int prom = ((move >> 12) & 7);
     string MoveStr = "";
 
-    MoveStr += (from%8)     + 'a'; // From file
-    MoveStr += (from/8)     + '1'; // From rank
-    MoveStr += (to%8)       + 'a'; // To file
-    MoveStr += (to/8)       + '1'; // To rank
+    MoveStr += (from % 8) + 'a'; // From file
+    MoveStr += (from / 8) + '1'; // From rank
+    MoveStr += (to % 8)   + 'a'; // To file
+    MoveStr += (to / 8)   + '1'; // To rank
 
     if (prom > 0){
         switch(prom){
-            case 1: MoveStr += 'n'; break;
-            case 2: MoveStr += 'b'; break;
-            case 3: MoveStr += 'r'; break;
-            case 4: MoveStr += 'q'; break;
+            case 2: MoveStr += 'n'; break;
+            case 3: MoveStr += 'b'; break;
+            case 4: MoveStr += 'r'; break;
+            case 5: MoveStr += 'q'; break;
         }
     }
 
@@ -84,20 +84,20 @@ inline Move StrToMove(const string MoveStr, chess& b){
     // Handle Promoted Piece
     if (MoveStr.length() == 5){
         switch(MoveStr[4]){
-            case 'n': prom = 1; break;
-            case 'b': prom = 2; break;
-            case 'r': prom = 3; break;
-            case 'q': prom = 4; break;
+            case 'n': prom = 2; break;
+            case 'b': prom = 3; break;
+            case 'r': prom = 4; break;
+            case 'q': prom = 5; break;
         }
     }
 
     // Identify from piece
-    if ((b.wp | b.bp) & (1ULL << from)) fromPc = 0;
-    else if ((b.wn | b.bn) & (1ULL << from)) fromPc = 1;
-    else if ((b.wb | b.bb) & (1ULL << from)) fromPc = 2;
-    else if ((b.wr | b.br) & (1ULL << from)) fromPc = 3;
-    else if ((b.wq | b.bq) & (1ULL << from)) fromPc = 4;
-    else if ((b.wk | b.bk) & (1ULL << from)) fromPc = 5;
+    if ((b.wp | b.bp) & (1ULL << from)) fromPc = 1;
+    else if ((b.wn | b.bn) & (1ULL << from)) fromPc = 2;
+    else if ((b.wb | b.bb) & (1ULL << from)) fromPc = 3;
+    else if ((b.wr | b.br) & (1ULL << from)) fromPc = 4;
+    else if ((b.wq | b.bq) & (1ULL << from)) fromPc = 5;
+    else if ((b.wk | b.bk) & (1ULL << from)) fromPc = 6;
 
     // Identify captured piece
     if ((b.wp | b.bp) & (1ULL << to)) capPc = 1;

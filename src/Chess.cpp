@@ -74,19 +74,19 @@ int main(){
                 if (command.size() >= 3 && command[2] == "moves") StartInd = 3;
             }
             else if (sub == "fen") {
-                int i;
+                size_t i;
                 string fenStr = "";
 
-                for (i = 2; i < (int)command.size() && command[i] != "moves"; ++i) fenStr += command[i] + " ";
+                for (i = 2; i < command.size() && command[i] != "moves"; ++i) fenStr += command[i] + " ";
                 ParseFEN(fenStr, brd);
-                if (i < (int)command.size() && command[i] == "moves") StartInd = i + 1;
+                if (i < command.size() && command[i] == "moves") StartInd = i + 1;
             }
             else {
                 cout << "info string Illegal subcommand " << sub << endl;
                 continue;
             }
             
-            for (int i = StartInd; StartInd >= 0 && i < (int)command.size(); ++i) {
+            for (size_t i = StartInd; StartInd >= 0 && i < command.size(); ++i) {
                 Move m = StrToMove(command[i], brd);
                 MovePiece(m, brd);
             }
