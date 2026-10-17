@@ -62,8 +62,8 @@ inline void WNmoves(chess &b, vector<Move> &Moves){
             Moves.push_back(ctz((1ULL << i) << 15) << 6 | i);
         if ((((1ULL << i) & clear_a) << 17) &~ b.wpcs)
             Moves.push_back(ctz((1ULL << i) << 17) << 6 | i);
-        if ((((1ULL << i) & clear_a & clear_b) << 17) &~ b.wpcs)
-            Moves.push_back(ctz((1ULL << i) << 17) << 6 | i);
+        if ((((1ULL << i) & clear_a & clear_b) << 10) &~ b.wpcs)
+            Moves.push_back(ctz((1ULL << i) << 10) << 6 | i);
     }
 }
 
@@ -89,8 +89,8 @@ inline void BNmoves(chess &b, vector<Move> &Moves){
             Moves.push_back(ctz((1ULL << i) << 15) << 6 | i);
         if ((((1ULL << i) & clear_a) << 17) &~ b.bpcs)
             Moves.push_back(ctz((1ULL << i) << 17) << 6 | i);
-        if ((((1ULL << i) & clear_a & clear_b) << 17) &~ b.bpcs)
-            Moves.push_back(ctz((1ULL << i) << 17) << 6 | i);
+        if ((((1ULL << i) & clear_a & clear_b) << 10) &~ b.bpcs)
+            Moves.push_back(ctz((1ULL << i) << 10) << 6 | i);
     }
 }
 
