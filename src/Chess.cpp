@@ -5,6 +5,12 @@
 #include "LookupTables.h"
 #include "MakeMove.h"
 
+bool isConvertibleToInt(const std::string& str, int& value) {
+    std::stringstream ss(str);
+    ss >> value; 
+    return ss && ss.eof(); 
+}
+
 int main(){
     cout << "Generating lookup tables, hold tight..." << endl;
     GenerateLookupTables();
@@ -43,14 +49,55 @@ int main(){
         } 
         else if (cmd == "go") {
             Move best = 0;
-            string sub = (command.size() > 1) ? command[1] : "";
+            string sub;
+            int arg;
+            bool Success = true;
 
-            if (sub == "") best = IterativeDeepening(brd, 3000);
-            else if (sub == "movetime") best = IterativeDeepening(brd, stoi(command[2]));
-            else if (sub == "depth") best = BestMove(brd, stoi(command[2]));
-            else cout << "Illegal command!" << endl;
+            int TimeLimit = 0;
+            int DepthLimit = 0;
 
-            if (best != 0) cout << "bestmove " << MoveToStr(best) << endl;
+            for(int i = 1; i < command.size(); i += 2){
+                sub = command[i]; 
+                if (sub != "movetime" && sub != "depth"){
+                    cout << "Illegal/unsupported subcommand " << sub << "!" << endl;
+                    Success = false;
+                    break;
+                }
+                if (command.size() == i+1) {
+                    cout << "Incomplete go command!" << endl;
+                    Success = false;
+                    break;
+                }
+                if (!isConvertibleToInt(command[i+1], arg)){
+                    cout << "Invalid argument to " << sub << ": " << command[i+1] << endl;
+                    Success = false;
+                    break;
+                }
+
+                if (sub == "movetime"){
+                    TimeLimit = arg;
+                }
+                else if (sub == "depth") {
+                    DepthLimit = arg;
+                }
+            }
+
+            if (!Success) continue;
+
+            if (TimeLimit == 0 && DepthLimit == 0){
+                best = IterativeDeepening(brd, 3000);
+            }
+            else if (DepthLimit == 0){
+                best = IterativeDeepening(brd, TimeLimit);
+            }
+            else if (TimeLimit == 0){
+                best = BestMove(brd, DepthLimit);
+            }
+            else {
+                best = IterativeDeepening(brd, TimeLimit, DepthLimit);
+            }
+
+            cout << "bestmove " << MoveToStr(best) << endl;
         }
         else if (cmd == "ucinewgame") {
             // Clear search history/Transposition Tables, dont exist now so ignore to prevent illegal cmd

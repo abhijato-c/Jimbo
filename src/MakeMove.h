@@ -49,7 +49,7 @@ inline int MiniMax(const chess &b, int depth, int alpha, int beta, timept start 
         alpha = max(-MiniMax(rd, depth-1, -beta, -alpha, start, time), alpha);
 
         if(alpha>=beta) return alpha;
-        if(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-start).count() > time) break;
+        if(TimeElapsed(start) > time) break;
     }
     return alpha;
 }
@@ -103,12 +103,12 @@ inline Move BestMove(const chess &b, int MaxDepth){
     return Best;
 }
 
-inline Move IterativeDeepening(const chess &b, int64_t t){
-    auto s=chrono::high_resolution_clock::now();
-    int d=2;
-    Move bm=0;
-    int besteval = -inf;
-    while(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count() < t){
+inline Move IterativeDeepening(const chess &b, int64_t t, int Mdepth = INT32_MAX){
+    timept StartTime = chrono::high_resolution_clock::now();
+    int CurrentDepth=2;
+    Move OverallBestMove = 0;
+    int BestEval = -inf;
+    while(TimeElapsed(StartTime) < t && CurrentDepth <= Mdepth){
         chess rd;
         int eval;
         int bestmove = 0;
@@ -146,10 +146,10 @@ inline Move IterativeDeepening(const chess &b, int64_t t){
             StaticEvals[MaxIndex] = -inf;
             rd=b;
             move_piece(Moves[MaxIndex], rd);
-            eval = -MiniMax(rd, d, -beta, -alpha, s, t);
-            if(chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now()-s).count() > t){
-                if(alpha>besteval) return bestmove; 
-                return bm;
+            eval = -MiniMax(rd, CurrentDepth, -beta, -alpha, StartTime, t);
+            if(TimeElapsed(StartTime) > t){
+                if(alpha > BestEval) return bestmove; 
+                return OverallBestMove;
             }
             if(eval>alpha){
                 alpha=eval;
@@ -157,11 +157,12 @@ inline Move IterativeDeepening(const chess &b, int64_t t){
             }
             if(alpha>=beta) break;
         }
-        besteval=alpha;
-        bm=bestmove;
-        d+=1;
+        BestEval = alpha;
+        OverallBestMove = bestmove;
+        cout << "Depth: " << CurrentDepth << ", Move: " << MoveToStr(OverallBestMove) << endl;
+        ++CurrentDepth;
     }
-    return bm;
+    return OverallBestMove;
 }
 
 inline void profile(int iters=6, string fen="r1k4r/2p1bq2/b4n1p/pp4p1/3QP3/7N/PP3PPP/RNB1R2K w - - 1 19"){
@@ -175,10 +176,10 @@ inline void profile(int iters=6, string fen="r1k4r/2p1bq2/b4n1p/pp4p1/3QP3/7N/PP
         cout<<i<<"-";
         cout << MoveToStr(best_move) << endl;
     }
+    int64_t TimeTaken = TimeElapsed(start);
     cout<<endl;
-    auto stop=chrono::high_resolution_clock::now();
-    cout<<"time per move:"<<chrono::duration_cast<chrono::microseconds>(stop - start).count()/((double)1000000*iters)<<endl;
-    cout<<"nps:"<<nodes*(double)1000000/chrono::duration_cast<chrono::microseconds>(stop - start).count()<<endl;
+    cout << "time per move:" <<  TimeTaken / ((double)1000000*iters) << endl;
+    cout<<"nps:" << nodes*(double)1000000/TimeTaken << endl;
     cout<<"nodes per move:"<<nodes/(double)iters<<endl;
 }
 
