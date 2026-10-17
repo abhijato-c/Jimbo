@@ -18,11 +18,9 @@ bool isConvertibleToInt(const string& str, int& value) {
 
 void RunSearch(chess brd, int TimeLimit, int DepthLimit){
     StopSignal = false;
-
     Move best = 0;
 
-    if (TimeLimit == 0 && DepthLimit == 0) best = IterativeDeepening(brd, 3000, INT_MAX);
-    else if (DepthLimit == 0) best = IterativeDeepening(brd, TimeLimit, INT_MAX);
+    if (DepthLimit == 0) best = IterativeDeepening(brd, TimeLimit, INT_MAX);
     else if (TimeLimit == 0) best = IterativeDeepening(brd, INT64_MAX, DepthLimit);
     else  best = IterativeDeepening(brd, TimeLimit, DepthLimit);
 
@@ -38,9 +36,10 @@ int main(){
     cout << "Generating lookup tables, hold tight..." << endl;
     GenerateLookupTables();
 
+    string InitialFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     string line;
     chess brd;
-    ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);
+    ParseFEN(InitialFEN, brd);
 
     cout << "Jimbo ready and accepting commands!" << endl;
     cout << "Please use this binary in your chess GUI/Lichess bot, or see how to write UCI commands." << endl;
@@ -62,31 +61,28 @@ int main(){
         else if (cmd == "isready") {cout << "readyok" << endl;} 
         else if (cmd == "position") {
             StopSearch();
-            if (command.size() < 2) continue;
+            if (command.size() < 2) {
+                cout << "info string position command needs arguments" << endl;
+                continue;
+            }
 
             string sub = command[1];
             int StartInd = -1;
             
             if (sub == "startpos") {
-                ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);
-                for (int i = 2; i < (int)command.size(); ++i){
-                    if (command[i] == "moves") {
-                        StartInd = i+1;
-                        break;
-                    }
-                }
+                ParseFEN(InitialFEN, brd);
+                if (command.size() >= 3 && command[2] == "moves") StartInd = 3;
             }
             else if (sub == "fen") {
-                int i = 2;
+                int i;
                 string fenStr = "";
 
-                for (; i < (int)command.size() && command[i] != "moves"; ++i) fenStr += command[i] + " ";
+                for (i = 2; i < (int)command.size() && command[i] != "moves"; ++i) fenStr += command[i] + " ";
                 ParseFEN(fenStr, brd);
-                if (i < (int)command.size() && command[i] == "moves")
-                    StartInd = i + 1;
+                if (i < (int)command.size() && command[i] == "moves") StartInd = i + 1;
             }
             else {
-                cout << "Illegal subcommand " << sub << "!" << endl;
+                cout << "info string Illegal subcommand " << sub << endl;
                 continue;
             }
             
@@ -98,45 +94,60 @@ int main(){
         else if (cmd == "go") {
             StopSearch();
 
-            string sub;
-            int arg;
-            bool Success = true;
-
             int TimeLimit = 0;
             int DepthLimit = 0;
+            int wtime = 0;
+            int btime = 0;
+            int winc = 0;
+            int binc = 0;
+            int moves = 30;
+            bool inf = false;
+            bool TimeSet = false;
+            bool Success = true;
 
-            for(int i = 1; i < (int)command.size(); i += 2){
-                sub = command[i]; 
-                if (sub != "movetime" && sub != "depth"){
-                    cout << "Illegal/unsupported subcommand " << sub << "!" << endl;
-                    Success = false;
-                    break;
+            for (size_t i = 1; i < command.size(); ++i) {
+                string sub = command[i];
+                int arg = 0;
+                if (sub == "infinite") inf = true;
+                else if (i + 1 < command.size() && isConvertibleToInt(command[i + 1], arg)){
+                    if (sub == "movetime") {
+                        TimeLimit = arg;
+                        TimeSet = true;
+                    }
+                    else if (sub == "depth") DepthLimit = arg;
+                    else if (sub == "wtime") wtime = arg;
+                    else if (sub == "btime") btime = arg;
+                    else if (sub == "winc") winc = arg;
+                    else if (sub == "binc") binc = arg;
+                    else if (sub == "movestogo") moves = arg;
+                    else Success = false;
+                    i++;
                 }
-                if ((int)command.size() == i+1) {
-                    cout << "Incomplete go command!" << endl;
-                    Success = false;
-                    break;
-                }
-                if (!isConvertibleToInt(command[i+1], arg)){
-                    cout << "Invalid argument to " << sub << ": " << command[i+1] << endl;
-                    Success = false;
-                    break;
-                }
-
-                if (sub == "movetime"){
-                    TimeLimit = arg;
-                }
-                else if (sub == "depth") {
-                    DepthLimit = arg;
-                }
+                else Success = false;
             }
 
-            if (!Success) continue;
-            SearchThread = thread(RunSearch, brd, TimeLimit, DepthLimit);
+            if (inf) TimeLimit = INT_MAX;
+            else if (!TimeSet && !(wtime == 0 || btime == 0)) {
+                int time = brd.turn ? wtime : btime;
+                int inc = brd.turn ? winc : binc;
+                if (time > 0) {
+                    TimeLimit = (time / moves) + (inc / 2);
+                    if (TimeLimit < 10) TimeLimit = 10;
+                    if (TimeLimit > time - 50 && time > 100) TimeLimit = time - 50;
+                }
+                else Success = false;
+            }
+            else if (!TimeSet && DepthLimit == 0) TimeLimit = INT_MAX;
+            else if (DepthLimit < 0 || TimeLimit < 0 || wtime < 0 || btime < 0 || winc < 0 || binc < 0 || moves < 0) Success = false;
+
+            if (Success)
+                SearchThread = thread(RunSearch, brd, TimeLimit, DepthLimit);
+            else
+                cout << "info string invalid/malformed/unsupported go command" << endl;
         }
         else if (cmd == "ucinewgame") {
             StopSearch();
-            ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", brd);
+            ParseFEN(InitialFEN, brd);
             // Clear Transposition Tables
         }
 
@@ -150,7 +161,7 @@ int main(){
             StopSearch();
             break;
         }
-        else {cout << "Illegal command " << cmd << "!" << endl;}
+        else {cout << "info string Illegal command " << cmd << "!" << endl;}
     }
 
     StopSearch();
