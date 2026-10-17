@@ -12,7 +12,7 @@ You can download a binary from the releases to use. If you want to compile the e
 g++ -march=native -Ofast -Wall -Wextra './src/Chess.cpp' -o '.Engine.exe'
 
 ```
-On linux/mac, remove the .exe from the output.
+On linux/mac, remove the .exe from the command.
 Go through the UCI command support of the readme to see what commands are available.
 
 ### Setting up the Lichess Bot
@@ -37,7 +37,7 @@ python3 LichessBot/LichessBot.py
 | --- | --- |
 | `uci` | Returns `uciok`, signifying the engine is ready. |
 | `isready` | Returns `readyok`, no difference compared to `uci` command. |
-| `position [fen / startpos]` | Sets up the board state. `moves` command not supported yet. |
+| `position [fen / startpos] moves [movelist, optional]` | Sets up the board state. |
 | `go [movetime / depth]` | Starts the engine calculation. If multiple constratints are provided, search stops at whichever is reached first. |
 | `stop` | Terminates the search and instantly returns the current best move. |
 | `quit` | Exits the engine. |
@@ -49,12 +49,6 @@ python3 LichessBot/LichessBot.py
 * **Iterative Deepening**: Dynamically manages time by searching deeper plies until the time limit or max depth is reached.
 * **MiniMax with Alpha-Beta Pruning**: Efficiently prunes the search tree to explore deeper lines by eliminating branches that cannot improve the outcome.
 * **Move Ordering**: Uses static evaluations to order moves, significantly increasing the efficiency of the Alpha-Beta pruning.
-
-### Technical Specifications
-
-* **UCI Support**: Supports standard commands including `uci`, `isready`, `position` (FEN and startpos), and `go` (depth and movetime).
-* **Performance Tools**: Includes a built-in `profile()` function to measure Nodes Per Second (NPS) and average time per move.
-* **Lookup Tables**: Utilizes pre-generated tables for sliders (Rooks and Bishops) to accelerate move generation.
 
 ## Project Structure
 

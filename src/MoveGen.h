@@ -6,13 +6,13 @@
 inline bool IsAttacked(const chess &b, int sq, bool byWhite){
     const Bitboard sqBB = 1ULL << sq;
 
-    const Bitboard ka =
+    const Bitboard KnightAtt =
         ((sqBB & clear_a & clear_b) >> 6) | ((sqBB & clear_a) >> 15) |
         ((sqBB & clear_h) >> 17)          | ((sqBB & clear_h & clear_g) >> 10) |
         ((sqBB & clear_h & clear_g) << 6) | ((sqBB & clear_h) << 15) |
         ((sqBB & clear_a) << 17)          | ((sqBB & clear_a & clear_b) << 10);
 
-    const Bitboard king_att =
+    const Bitboard KingAtt =
         ((sqBB & clear_h) << 7) | (sqBB << 8) | ((sqBB & clear_a) << 9) |
         ((sqBB & clear_a) << 1) | ((sqBB & clear_a) >> 7) | (sqBB >> 8) |
         ((sqBB & clear_h) >> 9) | ((sqBB & clear_h) >> 1);
@@ -29,17 +29,17 @@ inline bool IsAttacked(const chess &b, int sq, bool byWhite){
  
     if (byWhite){
         if (b.wp & (((sqBB & clear_a) >> 7) | ((sqBB & clear_h) >> 9))) return true;
-        if (b.wn & ka)               return true;
+        if (b.wn & KnightAtt)               return true;
         if ((b.wb | b.wq) & diag)    return true;
         if ((b.wr | b.wq) & orth)    return true;
-        if (b.wk & king_att)         return true;
+        if (b.wk & KingAtt)         return true;
     } 
     else {
         if (b.bp & (((sqBB & clear_h) << 7) | ((sqBB & clear_a) << 9))) return true;
-        if (b.bn & ka)               return true;
+        if (b.bn & KnightAtt)               return true;
         if ((b.bb | b.bq) & diag)    return true;
         if ((b.br | b.bq) & orth)    return true;
-        if (b.bk & king_att)         return true;
+        if (b.bk & KingAtt)         return true;
     }
     return false;
 }
@@ -202,8 +202,8 @@ inline void WPmoves(const chess &b, MoveList &Moves){
         // En passant
         if (b.ep >= 0){
             const Bitboard ep = 1ULL << b.ep;
-            if ((k << 7) & ep & clear_a) Moves.push_back(b.ep << 6 | i);
-            if ((k << 9) & ep & clear_h) Moves.push_back(b.ep << 6 | i);
+            if ((k << 7) & ep & clear_a) Moves.push_back((7 << 18) | b.ep << 6 | i);
+            if ((k << 9) & ep & clear_h) Moves.push_back((7 << 18) | b.ep << 6 | i);
         }
     }
 }
@@ -235,8 +235,8 @@ inline void BPmoves(const chess &b, MoveList &Moves){
         // En passant
         if (b.ep >= 0){
             const Bitboard ep = 1ULL << b.ep;
-            if ((k >> 7) & ep & clear_h) Moves.push_back(b.ep << 6 | i);
-            if ((k >> 9) & ep & clear_a) Moves.push_back(b.ep << 6 | i);
+            if ((k >> 7) & ep & clear_h) Moves.push_back((7 << 18) | b.ep << 6 | i);
+            if ((k >> 9) & ep & clear_a) Moves.push_back((7 << 18) | b.ep << 6 | i);
         }
     }
 }

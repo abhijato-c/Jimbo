@@ -22,7 +22,7 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start = chro
         int score = 0;
     
         // Capture check
-        if (b.pieces & (1ULL << ((m >> 6) & 63))) {
+        if ((b.pieces & (1ULL << ((m >> 6) & 63))) || ((m >> 18) & 7) == 7) {
             score += 100;
         }
         // Promotions
@@ -71,7 +71,7 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
             int score = 0;
         
             // Capture check
-            if (b.pieces & (1ULL << ((m >> 6) & 63))) {
+            if ((b.pieces & (1ULL << ((m >> 6) & 63))) || ((m >> 18) & 7) == 7) {
                 score += 100;
             }
             // Promotions
@@ -112,26 +112,6 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
         ++CurrentDepth;
     }
     return OverallBestMove;
-}
-
-inline void profile(int iters=6, string fen="r1k4r/2p1bq2/b4n1p/pp4p1/3QP3/7N/PP3PPP/RNB1R2K w - - 1 19"){
-    chess b;
-    ParseFEN(fen,b);
-    nodes = 0;
-
-    timept start = chrono::high_resolution_clock::now();
-    for(int i = 1; i <= iters; ++i){
-        Move best = IterativeDeepening(b, INT64_MAX, 7);
-        MovePiece(best, b);
-        cout<<i<<"-";
-        cout << MoveToStr(best) << endl;
-    }
-    double TimeTaken = TimeElapsed(start) / (double)1000;
-
-    cout << endl;
-    cout << "time per move:" <<  TimeTaken / iters << endl;
-    cout << "nps:" << nodes / TimeTaken << endl;
-    cout << "nodes per move:" << nodes / (double)iters << endl;
 }
 
 #endif

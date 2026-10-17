@@ -18,8 +18,7 @@ using namespace std;
 
 typedef std::chrono::high_resolution_clock::time_point timept;
 typedef unsigned long long int Bitboard;
-// Piece numbers : 0-pawn, 1:knight, 2:bishop, 3:rook, 4:queen, 5:king (+1 to all for capture)
-typedef uint32_t Move; // 19-21 cap pc, 16-18 from pc, 13-15 prom, 7-12 to, 1-6 from
+typedef uint32_t Move;
 
 /* 
 Move encoding
@@ -76,10 +75,10 @@ struct chess {
     Bitboard wp=0ULL; Bitboard wr=0ULL; Bitboard wn=0ULL; Bitboard wb=0ULL; Bitboard wq=0ULL; Bitboard wk=0ULL;
     Bitboard bp=0ULL; Bitboard br=0ULL; Bitboard bn=0ULL; Bitboard bb=0ULL; Bitboard bq=0ULL; Bitboard bk=0ULL;
     Bitboard bpcs=0; Bitboard wpcs=0; Bitboard pieces=0;
+	int ep = -1;
     bool WCastleKing = true; bool WCastleQueen = true;
     bool BCastleKing = true; bool BCastleQueen = true;
     bool turn = true;
-	int ep = -1;
 };
 
 struct MoveList {
@@ -98,8 +97,6 @@ struct MoveList {
     Move operator[](int index) const { return moves[index]; }
     Move& operator[](int index) { return moves[index]; }
 };
-
-inline int nodes = 0;
 
 inline Bitboard RookBlockers[64];
 inline Bitboard RookMovesLookup[64][4096];
