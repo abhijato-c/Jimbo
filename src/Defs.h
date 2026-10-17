@@ -21,14 +21,27 @@ typedef std::chrono::high_resolution_clock::time_point timept;
 typedef unsigned long long int Bitboard;
 typedef uint32_t Move;
 
+/*
+Piece Codes
+
+0 = None
+1 = P
+2 = N
+3 = B
+4 = R
+5 = Q
+6 = K
+7 = Ep
+*/
+
 /* 
 Move encoding
 
-0-5   : from square    (0-63)
-6-11  : to square      (0-63)
-12-14 : promotion      (0=none 1=N 2=B 3=R 4=Q)
-15-17 : from piece     (0=P 1=N 2=B 3=R 4=Q 5=K)
-18-20 : captured piece (0=none 1=P 2=N 3=B 4=R 5=Q 6=K 7=EP)
+0-5   : From sq     (0-63)
+6-11  : To sq       (0-63)
+12-14 : Promotion   (Piece codes)
+15-17 : From pc     (Piece codes)
+18-20 : Captured pc (Piece codes)
 21-24 : prev castling rights (WK | WQ | BK | BQ)
 25-31 : prev ep square + 1   (0 = no prev ep; 1-64 = sq+1)
 */
