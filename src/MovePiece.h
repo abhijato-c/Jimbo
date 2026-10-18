@@ -97,7 +97,7 @@ inline void UnmovePiece(const Move mv, chess &b){
     b.WCastleQueen = (mv >> 23) & 1;
     b.BCastleKing = (mv >> 22) & 1;
     b.BCastleQueen = (mv >> 21) & 1;
-    b.ep = (int)((mv >> 25) & 127) - 1;
+    b.ep = (int)((mv >> 25) & 15) - 1;
 
     if (b.turn) UnMoveBlack(mv, b);
     else UnMoveWhite(mv, b);
@@ -153,7 +153,7 @@ inline void MoveWhitePiece(Move& mv, chess& b){
             if (((mv >> 18) & 7) == 7)
                 b.bp &= ~(to >> 8);
             if ((ctz(to) - ctz(f)) == 16)
-                b.ep = ctz(to) - 8;
+                b.ep = (ctz(to) & 7);
             break;
         case 2:
             b.wn = (b.wn & ~f) | to;
@@ -238,7 +238,7 @@ inline void MoveBlackPiece(Move& mv, chess& b){
             if (((mv >> 18) & 7) == 7)
                 b.wp &= ~(to << 8);
             if ((ctz(f) - ctz(to)) == 16)
-                b.ep = ctz(to) + 8;
+                b.ep = (ctz(to) & 7);
             break;
         case 2:
             b.bn = (b.bn & ~f) | to;
@@ -279,8 +279,8 @@ inline void MoveBlackPiece(Move& mv, chess& b){
 }
 
 inline bool MovePiece(Move& mv, chess& b){
-    mv |= (uint32_t)(b.ep + 1) << 25;
-    mv |= ((uint32_t)(b.WCastleKing << 3) | (b.WCastleQueen << 2) | (b.BCastleKing << 1) | b.BCastleQueen) << 21;
+    mv |= (int)(b.ep + 1) << 25;
+    mv |= ((int)(b.WCastleKing << 3) | (b.WCastleQueen << 2) | (b.BCastleKing << 1) | b.BCastleQueen) << 21;
     b.ep = -1;
     
     if(b.turn) MoveWhitePiece(mv,b);

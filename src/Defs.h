@@ -43,7 +43,7 @@ Move encoding
 15-17 : From pc     (Piece codes)
 18-20 : Captured pc (Piece codes)
 21-24 : prev castling rights (WK | WQ | BK | BQ)
-25-31 : prev ep square + 1   (0 = no prev ep; 1-64 = sq+1)
+25-28 : prev ep square + 1   (0 = no prev ep; 1-8 = ep file)
 */
 
 extern atomic<bool> StopSignal;

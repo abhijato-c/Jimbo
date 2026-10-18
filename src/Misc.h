@@ -108,7 +108,7 @@ inline Move StrToMove(const string MoveStr, chess& b){
     else if ((b.wk | b.bk) & (1ULL << to)) capPc = 6;
 
     // En passant detection
-    if (fromPc == 0 && FromFile != ToFile && capPc == 0)  capPc = 7;
+    if (fromPc == 1 && FromFile != ToFile && capPc == 0)  capPc = 7;
     
     return (capPc << 18) | (fromPc << 15) | (prom << 12) | (to << 6) | from;
 }
@@ -146,7 +146,7 @@ inline void ParseFEN(string FullFEN, chess &b){
 
     // Ep square
     if (epSquare != "-")
-        b.ep = (epSquare[1] - '1') * 8 + (epSquare[0] - 'a');
+        b.ep = epSquare[0] - 'a';
 
     // Piece arrangement (a1 = 0, b1 = 1, ... h1 = 7, a2 = 8, ... h8 = 63)
     int rank = 7, file = 0;

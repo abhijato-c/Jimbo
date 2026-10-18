@@ -127,9 +127,9 @@ inline void WPmoves(const chess &b, MoveList &Moves){
         
         // En passant
         if (b.ep >= 0){
-            const Bitboard ep = 1ULL << b.ep;
-            if ((k << 7) & ep & clear_h) Moves.push_back((7 << 18) | (1 << 15) | b.ep << 6 | i);
-            if ((k << 9) & ep & clear_a) Moves.push_back((7 << 18) | (1 << 15) | b.ep << 6 | i);
+            const Bitboard ep = 1ULL << (40 + b.ep);
+            if ((k << 7) & ep & clear_h) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
+            if ((k << 9) & ep & clear_a) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
         }
     }
 }
@@ -160,9 +160,9 @@ inline void BPmoves(const chess &b, MoveList &Moves){
         
         // En passant
         if (b.ep >= 0){
-            const Bitboard ep = 1ULL << b.ep;
-            if ((k >> 7) & ep & clear_a) Moves.push_back((7 << 18) | (1 << 15) | b.ep << 6 | i);
-            if ((k >> 9) & ep & clear_h) Moves.push_back((7 << 18) | (1 << 15) | b.ep << 6 | i);
+            const Bitboard ep = 1ULL << (16 + b.ep);
+            if ((k >> 7) & ep & clear_a) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
+            if ((k >> 9) & ep & clear_h) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
         }
     }
 }
