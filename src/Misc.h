@@ -5,11 +5,9 @@
 #include <sstream>
 
 inline int StaticEval(const chess &b){
-    if (b.turn)
-        return ((popcnt(b.wb)*4) + (popcnt(b.wn)*3) + (popcnt(b.wp)) + (popcnt(b.wq)*9) + (popcnt(b.wr)*5) -
-                (popcnt(b.bb)*4) - (popcnt(b.bn)*3) - (popcnt(b.bp)) - (popcnt(b.bq)*9) - (popcnt(b.br)*5));
-    return ((popcnt(b.bb)*4) + (popcnt(b.bn)*3) + (popcnt(b.bp)) + (popcnt(b.bq)*9) + (popcnt(b.br)*5) -
-            (popcnt(b.wb)*4) - (popcnt(b.wn)*3) - (popcnt(b.wp)) - (popcnt(b.wq)*9) - (popcnt(b.wr)*5));
+    int phase = clamp(b.phase, 0, 24);
+    int score = (phase * b.mg) + ((24 - phase) * b.eg);
+    return b.turn ? score : -score;
 }
 
 inline bool IsAttacked(const chess &b, int sq, bool byWhite){
@@ -129,6 +127,7 @@ inline void ParseFEN(string FullFEN, chess &b){
     // Reset board
     b.wp=0ULL; b.wr=0ULL; b.wn=0ULL; b.wb=0ULL; b.wq=0ULL; b.wk=0ULL;
     b.bp=0ULL; b.br=0ULL; b.bn=0ULL; b.bb=0ULL; b.bq=0ULL; b.bk=0ULL;
+    b.mg = 0; b.eg = 0; b.phase = 0;
     b.ep = -1;
     b.WCastleKing = false; b.WCastleQueen = false; b.BCastleKing = false; b.BCastleQueen = false;
 
@@ -154,21 +153,78 @@ inline void ParseFEN(string FullFEN, chess &b){
         if (c == '/')        { --rank; file = 0; }
         else if (isdigit(c)) { file += c - '0'; }
         else {
-            const Bitboard sq = 1ULL << (rank * 8 + file);
+            Bitboard sq = 1ULL << (rank * 8 + file);
+            int ind = rank * 8 + file;
             ++file;
             switch(c){
-                case 'p': b.bp |= sq; break;
-                case 'n': b.bn |= sq; break;
-                case 'b': b.bb |= sq; break;
-                case 'r': b.br |= sq; break;
-                case 'q': b.bq |= sq; break;
-                case 'k': b.bk |= sq; break;
-                case 'P': b.wp |= sq; break;
-                case 'N': b.wn |= sq; break;
-                case 'B': b.wb |= sq; break;
-                case 'R': b.wr |= sq; break;
-                case 'Q': b.wq |= sq; break;
-                case 'K': b.wk |= sq; break;
+                case 'p': 
+                    b.bp |= sq; 
+                    b.mg -= P_mg + P_mg_table[ind]; 
+                    b.eg -= P_eg + P_eg_table[ind];
+                    break;
+                case 'n': 
+                    b.bn |= sq; 
+                    b.mg -= N_mg + N_mg_table[ind]; 
+                    b.eg -= N_eg + N_eg_table[ind];
+                    b.phase += 1;
+                    break;
+                case 'b': 
+                    b.bb |= sq; 
+                    b.mg -= B_mg + B_mg_table[ind]; 
+                    b.eg -= B_eg + B_eg_table[ind];
+                    b.phase += 1;
+                    break;
+                case 'r': 
+                    b.br |= sq; 
+                    b.mg -= R_mg + R_mg_table[ind]; 
+                    b.eg -= R_eg + R_eg_table[ind];
+                    b.phase += 2;
+                    break;
+                case 'q': 
+                    b.bq |= sq; 
+                    b.mg -= Q_mg + Q_mg_table[ind]; 
+                    b.eg -= Q_eg + Q_eg_table[ind];
+                    b.phase += 4;
+                    break;
+                case 'k': 
+                    b.bk |= sq; 
+                    b.mg -= K_mg + K_mg_table[ind]; 
+                    b.eg -= K_eg + K_eg_table[ind];
+                    break;
+                case 'P': 
+                    b.wp |= sq; 
+                    b.mg += P_mg + P_mg_table[ind ^ 56]; 
+                    b.eg += P_eg + P_eg_table[ind ^ 56];
+                    break;
+                case 'N': 
+                    b.wn |= sq; 
+                    b.mg += N_mg + N_mg_table[ind ^ 56]; 
+                    b.eg += N_eg + N_eg_table[ind ^ 56];
+                    b.phase += 1;
+                    break;
+                case 'B': 
+                    b.wb |= sq;
+                    b.mg += B_mg + B_mg_table[ind ^ 56]; 
+                    b.eg += B_eg + B_eg_table[ind ^ 56];
+                    b.phase += 1;
+                    break;
+                case 'R': 
+                    b.wr |= sq; 
+                    b.mg += R_mg + R_mg_table[ind ^ 56]; 
+                    b.eg += R_eg + R_eg_table[ind ^ 56];
+                    b.phase += 2;
+                    break;
+                case 'Q': 
+                    b.wq |= sq; 
+                    b.mg += Q_mg + Q_mg_table[ind ^ 56]; 
+                    b.eg += Q_eg + Q_eg_table[ind ^ 56];
+                    b.phase += 4;
+                    break;
+                case 'K': 
+                    b.wk |= sq;
+                    b.mg += K_mg + K_mg_table[ind ^ 56]; 
+                    b.eg += K_eg + K_eg_table[ind ^ 56];
+                    break;
             }
         }
     }

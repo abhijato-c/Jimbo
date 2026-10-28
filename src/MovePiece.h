@@ -10,41 +10,147 @@ inline void UnMoveWhite(const Move mv, chess &b){
 
     // Move back piece
     switch ((mv >> 15) & 7) {
-        case 1: b.wp = (b.wp & ~to) | f; break;
-        case 2: b.wn = (b.wn & ~to) | f; break;
-        case 3: b.wb = (b.wb & ~to) | f; break;
-        case 4: b.wr = (b.wr & ~to) | f; break;
-        case 5: b.wq = (b.wq & ~to) | f; break;
+        case 1: 
+            b.wp = (b.wp & ~to) | f; 
+            b.mg -= P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg += P_mg + P_mg_table[ctz(f) ^ 56];
+            b.eg -= P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(f) ^ 56];
+            break;
+        case 2: 
+            b.wn = (b.wn & ~to) | f;
+            b.mg -= N_mg + N_mg_table[ctz(to) ^ 56];
+            b.mg += N_mg + N_mg_table[ctz(f) ^ 56];
+            b.eg -= N_eg + N_eg_table[ctz(to) ^ 56];
+            b.eg += N_eg + N_eg_table[ctz(f) ^ 56];
+            break;
+        case 3: 
+            b.wb = (b.wb & ~to) | f; 
+            b.mg -= B_mg + B_mg_table[ctz(to) ^ 56];
+            b.mg += B_mg + B_mg_table[ctz(f) ^ 56];
+            b.eg -= B_eg + B_eg_table[ctz(to) ^ 56];
+            b.eg += B_eg + B_eg_table[ctz(f) ^ 56];
+            break;
+        case 4: 
+            b.wr = (b.wr & ~to) | f; 
+            b.mg -= R_mg + R_mg_table[ctz(to) ^ 56];
+            b.mg += R_mg + R_mg_table[ctz(f) ^ 56];
+            b.eg -= R_eg + R_eg_table[ctz(to) ^ 56];
+            b.eg += R_eg + R_eg_table[ctz(f) ^ 56];
+            break;
+        case 5: 
+            b.wq = (b.wq & ~to) | f; 
+            b.mg -= Q_mg + Q_mg_table[ctz(to) ^ 56];
+            b.mg += Q_mg + Q_mg_table[ctz(f) ^ 56];
+            b.eg -= Q_eg + Q_eg_table[ctz(to) ^ 56];
+            b.eg += Q_eg + Q_eg_table[ctz(f) ^ 56];
+            break;
         case 6:
             b.wk = (b.wk & ~to) | f;
+            b.mg -= K_mg + K_mg_table[ctz(to) ^ 56];
+            b.mg += K_mg + K_mg_table[ctz(f) ^ 56];
+            b.eg -= K_eg + K_eg_table[ctz(to) ^ 56];
+            b.eg += K_eg + K_eg_table[ctz(f) ^ 56];
 
             // Castle
             if (ctz(f) == 4){
                 // Kingside
-                if (ctz(to) == 6 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 5)) | (1ULL << 7);
+                if (ctz(to) == 6 || ctz(to) == 7) {
+                    b.wr = (b.wr & ~(1ULL << 5)) | (1ULL << 7);
+                    b.mg -= R_mg + R_mg_table[61];
+                    b.mg += R_mg + R_mg_table[63];
+                    b.eg -= R_eg + R_eg_table[61];
+                    b.eg += R_eg + R_eg_table[63];
+                }
                 //Queen
-                else if (ctz(to) == 2 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 3)) | (1ULL << 0);
+                else if (ctz(to) == 2 || ctz(to) == 0) {
+                    b.wr = (b.wr & ~(1ULL << 3)) | (1ULL << 0);
+                    b.mg -= R_mg + R_mg_table[59];
+                    b.mg += R_mg + R_mg_table[56];
+                    b.eg -= R_eg + R_eg_table[59];
+                    b.eg += R_eg + R_eg_table[56];
+                }
             }
             break;
     }
      
     // Undo promotion
     switch (((mv >> 12) & 7)) {
-        case 2: b.wn &= ~to; break;
-        case 3: b.wb &= ~to; break;
-        case 4: b.wr &= ~to; break;
-        case 5: b.wq &= ~to; break;
+        case 2: 
+            b.wn &= ~to; 
+            b.mg += P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg -= N_mg + N_mg_table[ctz(to) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg -= N_eg + N_eg_table[ctz(to) ^ 56];
+            b.phase -= 1;
+            break;
+        case 3: 
+            b.wb &= ~to; 
+            b.mg += P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg -= B_mg + B_mg_table[ctz(to) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg -= B_eg + B_eg_table[ctz(to) ^ 56];
+            b.phase -= 1;
+            break;
+        case 4: 
+            b.wr &= ~to; 
+            b.mg += P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg -= R_mg + R_mg_table[ctz(to) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg -= R_eg + R_eg_table[ctz(to) ^ 56];
+            b.phase -= 2;
+            break;
+        case 5: 
+            b.wq &= ~to; 
+            b.mg += P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg -= Q_mg + Q_mg_table[ctz(to) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg -= Q_eg + Q_eg_table[ctz(to) ^ 56];
+            b.phase -= 4;
+            break;
     }
 
     // Undo capture
     switch (((mv >> 18) & 7)) {
-        case 1: b.bp |= to; break;
-        case 2: b.bn |= to; break;
-        case 3: b.bb |= to; break;
-        case 4: b.br |= to; break;
-        case 5: b.bq |= to; break;
-        case 6: b.bk |= to; break;
-        case 7: b.bp |= (to >> 8); break;
+        case 1: 
+            b.bp |= to; 
+            b.mg -= P_mg + P_mg_table[ctz(to)];
+            b.eg -= P_eg + P_eg_table[ctz(to)];
+            break;
+        case 2: 
+            b.bn |= to; 
+            b.mg -= N_mg + N_mg_table[ctz(to)];
+            b.eg -= N_eg + N_eg_table[ctz(to)];
+            b.phase += 1;
+            break;
+        case 3: 
+            b.bb |= to; 
+            b.mg -= B_mg + B_mg_table[ctz(to)];
+            b.eg -= B_eg + B_eg_table[ctz(to)];
+            b.phase += 1;
+            break;
+        case 4: 
+            b.br |= to; 
+            b.mg -= R_mg + R_mg_table[ctz(to)];
+            b.eg -= R_eg + R_eg_table[ctz(to)];
+            b.phase += 2;
+            break;
+        case 5: 
+            b.bq |= to; 
+            b.mg -= Q_mg + Q_mg_table[ctz(to)];
+            b.eg -= Q_eg + Q_eg_table[ctz(to)];
+            b.phase += 4;
+            break;
+        case 6: 
+            b.bk |= to; 
+            b.mg -= K_mg + K_mg_table[ctz(to)];
+            b.eg -= K_eg + K_eg_table[ctz(to)];
+            break;
+        case 7: 
+            b.bp |= (to >> 8); 
+            b.mg -= P_mg + P_mg_table[ctz(to >> 8)];
+            b.eg -= P_eg + P_eg_table[ctz(to >> 8)];
+            break;
     }
 }
 
@@ -54,41 +160,147 @@ inline void UnMoveBlack(const Move mv, chess &b){
 
     // Move back piece
     switch ((mv >> 15) & 7){
-        case 1: b.bp = (b.bp & ~to) | f; break;
-        case 2: b.bn = (b.bn & ~to) | f; break;
-        case 3: b.bb = (b.bb & ~to) | f; break;
-        case 4: b.br = (b.br & ~to) | f; break;
-        case 5: b.bq = (b.bq & ~to) | f; break;
+        case 1: 
+            b.bp = (b.bp & ~to) | f; 
+            b.mg += P_mg + P_mg_table[ctz(to)];
+            b.mg -= P_mg + P_mg_table[ctz(f)];
+            b.eg += P_eg + P_eg_table[ctz(to)];
+            b.eg -= P_eg + P_eg_table[ctz(f)];
+            break;
+        case 2: 
+            b.bn = (b.bn & ~to) | f; 
+            b.mg += N_mg + N_mg_table[ctz(to)];
+            b.mg -= N_mg + N_mg_table[ctz(f)];
+            b.eg += N_eg + N_eg_table[ctz(to)];
+            b.eg -= N_eg + N_eg_table[ctz(f)];
+            break;
+        case 3: 
+            b.bb = (b.bb & ~to) | f; 
+            b.mg += B_mg + B_mg_table[ctz(to)];
+            b.mg -= B_mg + B_mg_table[ctz(f)];
+            b.eg += B_eg + B_eg_table[ctz(to)];
+            b.eg -= B_eg + B_eg_table[ctz(f)];
+            break;
+        case 4: 
+            b.br = (b.br & ~to) | f; 
+            b.mg += R_mg + R_mg_table[ctz(to)];
+            b.mg -= R_mg + R_mg_table[ctz(f)];
+            b.eg += R_eg + R_eg_table[ctz(to)];
+            b.eg -= R_eg + R_eg_table[ctz(f)];
+            break;
+        case 5: 
+            b.bq = (b.bq & ~to) | f; 
+            b.mg += Q_mg + Q_mg_table[ctz(to)];
+            b.mg -= Q_mg + Q_mg_table[ctz(f)];
+            b.eg += Q_eg + Q_eg_table[ctz(to)];
+            b.eg -= Q_eg + Q_eg_table[ctz(f)];
+            break;
         case 6:
             b.bk = (b.bk & ~to) | f;
+            b.mg += K_mg + K_mg_table[ctz(to)];
+            b.mg -= K_mg + K_mg_table[ctz(f)];
+            b.eg += K_eg + K_eg_table[ctz(to)];
+            b.eg -= K_eg + K_eg_table[ctz(f)];
 
             // Castle
             if (ctz(f) == 60) {
                 // Kingside
-                if (ctz(to) == 62 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 61)) | (1ULL << 63);
+                if (ctz(to) == 62 || ctz(to) == 63) {
+                    b.br = (b.br & ~(1ULL << 61)) | (1ULL << 63);
+                    b.mg += R_mg + R_mg_table[61];
+                    b.mg -= R_mg + R_mg_table[63];
+                    b.eg += R_eg + R_eg_table[61];
+                    b.eg -= R_eg + R_eg_table[63];
+                }
                 //Queen
-                else if (ctz(to) == 58 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 59)) | (1ULL << 56);
+                else if (ctz(to) == 58 || ctz(to) == 56) {
+                    b.br = (b.br & ~(1ULL << 59)) | (1ULL << 56);
+                    b.mg += R_mg + R_mg_table[59];
+                    b.mg -= R_mg + R_mg_table[56];
+                    b.eg += R_eg + R_eg_table[59];
+                    b.eg -= R_eg + R_eg_table[56];
+                }
             }
             break;
     }
      
     // Undo promotion
     switch (((mv >> 12) & 7)) {
-        case 2: b.bn &= ~to; break;
-        case 3: b.bb &= ~to; break;
-        case 4: b.br &= ~to; break;
-        case 5: b.bq &= ~to; break;
+        case 2: 
+            b.bn &= ~to; 
+            b.mg -= P_mg + P_mg_table[ctz(to)];
+            b.mg += N_mg + N_mg_table[ctz(to)];
+            b.eg -= P_eg + P_eg_table[ctz(to)];
+            b.eg += N_eg + N_eg_table[ctz(to)];
+            b.phase -= 1;
+            break;
+        case 3: 
+            b.bb &= ~to; 
+            b.mg -= P_mg + P_mg_table[ctz(to)];
+            b.mg += B_mg + B_mg_table[ctz(to)];
+            b.eg -= P_eg + P_eg_table[ctz(to)];
+            b.eg += B_eg + B_eg_table[ctz(to)];
+            b.phase -= 1;
+            break;
+        case 4: 
+            b.br &= ~to; 
+            b.mg -= P_mg + P_mg_table[ctz(to)];
+            b.mg += R_mg + R_mg_table[ctz(to)];
+            b.eg -= P_eg + P_eg_table[ctz(to)];
+            b.eg += R_eg + R_eg_table[ctz(to)];
+            b.phase -= 2;
+            break;
+        case 5: 
+            b.bq &= ~to; 
+            b.mg -= P_mg + P_mg_table[ctz(to)];
+            b.mg += Q_mg + Q_mg_table[ctz(to)];
+            b.eg -= P_eg + P_eg_table[ctz(to)];
+            b.eg += Q_eg + Q_eg_table[ctz(to)];
+            b.phase -= 4;
+            break;
     }
 
     // Undo capture
     switch (((mv >> 18) & 7)) {
-        case 1: b.wp |= to; break;
-        case 2: b.wn |= to; break;
-        case 3: b.wb |= to; break;
-        case 4: b.wr |= to; break;
-        case 5: b.wq |= to; break;
-        case 6: b.wk |= to; break;
-        case 7: b.wp |= (to << 8); break;
+        case 1: 
+            b.wp |= to; 
+            b.mg += P_mg + P_mg_table[ctz(to) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(to) ^ 56];
+            break;
+        case 2: 
+            b.wn |= to; 
+            b.mg += N_mg + N_mg_table[ctz(to) ^ 56];
+            b.eg += N_eg + N_eg_table[ctz(to) ^ 56];
+            b.phase += 1;
+            break;
+        case 3: 
+            b.wb |= to; 
+            b.mg += B_mg + B_mg_table[ctz(to) ^ 56];
+            b.eg += B_eg + B_eg_table[ctz(to) ^ 56];
+            b.phase += 1;
+            break;
+        case 4: 
+            b.wr |= to; 
+            b.mg += R_mg + R_mg_table[ctz(to) ^ 56];
+            b.eg += R_eg + R_eg_table[ctz(to) ^ 56];
+            b.phase += 2;
+            break;
+        case 5: 
+            b.wq |= to; 
+            b.mg += Q_mg + Q_mg_table[ctz(to) ^ 56];
+            b.eg += Q_eg + Q_eg_table[ctz(to) ^ 56];
+            b.phase += 4;
+            break;
+        case 6: 
+            b.wk |= to; 
+            b.mg += K_mg + K_mg_table[ctz(to) ^ 56];
+            b.eg += K_eg + K_eg_table[ctz(to) ^ 56];
+            break;
+        case 7: 
+            b.wp |= (to << 8); 
+            b.mg += P_mg + P_mg_table[ctz(to << 8) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(to << 8) ^ 56];
+            break;
     }
 }
 
@@ -117,26 +329,42 @@ inline void MoveWhitePiece(Move& mv, chess& b){
         if ((b.bp & to) != 0){
             b.bp &= ~to;
             mv |= (1 << 18);
+            b.mg += P_mg + P_mg_table[ctz(to)];
+            b.eg += P_eg + P_eg_table[ctz(to)];
         }
         else if ((b.bn & to) != 0){
             b.bn &= ~to;
             mv |= (2 << 18);
+            b.mg += N_mg + N_mg_table[ctz(to)];
+            b.eg += N_eg + N_eg_table[ctz(to)];
+            b.phase -= 1;
         }
         else if ((b.bb & to) != 0){
             b.bb &= ~to;
             mv |= (3 << 18);
+            b.mg += B_mg + B_mg_table[ctz(to)];
+            b.eg += B_eg + B_eg_table[ctz(to)];
+            b.phase -= 1;
         }
         else if ((b.br & to) != 0){
             b.br &= ~to;
             mv |= (4 << 18);
+            b.mg += R_mg + R_mg_table[ctz(to)];
+            b.eg += R_eg + R_eg_table[ctz(to)];
+            b.phase -= 2;
         }
         else if ((b.bq & to) != 0){
             b.bq &= ~to;
             mv |= (5 << 18);
+            b.mg += Q_mg + Q_mg_table[ctz(to)];
+            b.eg += Q_eg + Q_eg_table[ctz(to)];
+            b.phase -= 4;
         }
         else if ((b.bk & to) != 0){
             b.bk &= ~to;
             mv |= (6 << 18);
+            b.mg += K_mg + K_mg_table[ctz(to)];
+            b.eg += K_eg + K_eg_table[ctz(to)];
         }
 
         // Remove castle rights
@@ -150,24 +378,47 @@ inline void MoveWhitePiece(Move& mv, chess& b){
             b.wp = (b.wp & ~f) | to;
 
             // En passant
-            if (((mv >> 18) & 7) == 7)
+            if (((mv >> 18) & 7) == 7) {
                 b.bp &= ~(to >> 8);
+                b.mg += P_mg + P_mg_table[ctz(to >> 8)];
+                b.eg += P_eg + P_eg_table[ctz(to >> 8)];
+            }
             if ((ctz(to) - ctz(f)) == 16)
                 b.ep = (ctz(to) & 7);
+            b.mg -= P_mg + P_mg_table[ctz(f) ^ 56];
+            b.mg += P_mg + P_mg_table[ctz(to) ^ 56];
+            b.eg -= P_eg + P_eg_table[ctz(f) ^ 56];
+            b.eg += P_eg + P_eg_table[ctz(to) ^ 56];
             break;
         case 2:
             b.wn = (b.wn & ~f) | to;
+            b.mg -= N_mg + N_mg_table[ctz(f) ^ 56];
+            b.mg += N_mg + N_mg_table[ctz(to) ^ 56];
+            b.eg -= N_eg + N_eg_table[ctz(f) ^ 56];
+            b.eg += N_eg + N_eg_table[ctz(to) ^ 56];
             break;
         case 3:
             b.wb = (b.wb & ~f) | to;
+            b.mg -= B_mg + B_mg_table[ctz(f) ^ 56];
+            b.mg += B_mg + B_mg_table[ctz(to) ^ 56];
+            b.eg -= B_eg + B_eg_table[ctz(f) ^ 56];
+            b.eg += B_eg + B_eg_table[ctz(to) ^ 56];
             break;
         case 4:
             b.wr = (b.wr & ~f) | to;
             if ((mv & 63) == 7) b.WCastleKing = false;
             else if ((mv & 63) == 0) b.WCastleQueen = false;
+            b.mg -= R_mg + R_mg_table[ctz(f) ^ 56];
+            b.mg += R_mg + R_mg_table[ctz(to) ^ 56];
+            b.eg -= R_eg + R_eg_table[ctz(f) ^ 56];
+            b.eg += R_eg + R_eg_table[ctz(to) ^ 56];
             break;
         case 5:
             b.wq = (b.wq & ~f) | to;
+            b.mg -= Q_mg + Q_mg_table[ctz(f) ^ 56];
+            b.mg += Q_mg + Q_mg_table[ctz(to) ^ 56];
+            b.eg -= Q_eg + Q_eg_table[ctz(f) ^ 56];
+            b.eg += Q_eg + Q_eg_table[ctz(to) ^ 56];
             break;
         case 6:
             b.wk = (b.wk & ~f) | to;
@@ -175,21 +426,69 @@ inline void MoveWhitePiece(Move& mv, chess& b){
             // Castle
             if (ctz(f) == 4){
                 // Kingside
-                if (ctz(to) == 6 || ctz(to) == 7) b.wr = (b.wr & ~(1ULL << 7)) | (1ULL << 5);
+                if (ctz(to) == 6 || ctz(to) == 7) {
+                    b.wr = (b.wr & ~(1ULL << 7)) | (1ULL << 5);
+                    b.mg -= R_mg + R_mg_table[63];
+                    b.mg += R_mg + R_mg_table[61];
+                    b.eg -= R_eg + R_eg_table[63];
+                    b.eg += R_eg + R_eg_table[61];
+                }
                 //Queen
-                else if (ctz(to) == 2 || ctz(to) == 0) b.wr = (b.wr & ~(1ULL << 0)) | (1ULL << 3);
+                else if (ctz(to) == 2 || ctz(to) == 0) {
+                    b.wr = (b.wr & ~(1ULL << 0)) | (1ULL << 3);
+                    b.mg -= R_mg + R_mg_table[56];
+                    b.mg += R_mg + R_mg_table[59];
+                    b.eg -= R_eg + R_eg_table[56];
+                    b.eg += R_eg + R_eg_table[59];
+                }
             }
             b.WCastleKing = false;
             b.WCastleQueen = false;
+            b.mg -= K_mg + K_mg_table[ctz(f) ^ 56];
+            b.mg += K_mg + K_mg_table[ctz(to) ^ 56];
+            b.eg -= K_eg + K_eg_table[ctz(f) ^ 56];
+            b.eg += K_eg + K_eg_table[ctz(to) ^ 56];
             break;
     }
 
     // Promotion
     switch(((mv >> 12) & 7)){
-        case 2: b.wp &= ~to; b.wn |= to; break;
-        case 3: b.wp &= ~to; b.wb |= to; break;
-        case 4: b.wp &= ~to; b.wr |= to; break;
-        case 5: b.wp &= ~to; b.wq |= to; break;
+        case 2: 
+            b.wp &= ~to; 
+            b.wn |= to;
+            b.mg -= P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg += N_mg + N_mg_table[ctz(to) ^ 56];
+            b.eg -= P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg += N_eg + N_eg_table[ctz(to) ^ 56];
+            b.phase += 1;
+            break;
+        case 3: 
+            b.wp &= ~to; 
+            b.wb |= to; 
+            b.mg -= P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg += B_mg + B_mg_table[ctz(to) ^ 56];
+            b.eg -= P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg += B_eg + B_eg_table[ctz(to) ^ 56];
+            b.phase += 1;
+            break;
+        case 4: 
+            b.wp &= ~to; 
+            b.wr |= to; 
+            b.mg -= P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg += R_mg + R_mg_table[ctz(to) ^ 56];
+            b.eg -= P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg += R_eg + R_eg_table[ctz(to) ^ 56];
+            b.phase += 2;
+            break;
+        case 5: 
+            b.wp &= ~to; 
+            b.wq |= to;
+            b.mg -= P_mg + P_mg_table[ctz(to) ^ 56];
+            b.mg += Q_mg + Q_mg_table[ctz(to) ^ 56];
+            b.eg -= P_eg + P_eg_table[ctz(to) ^ 56];
+            b.eg += Q_eg + Q_eg_table[ctz(to) ^ 56];
+            b.phase += 4;
+            break;
     }
 }
 
@@ -202,26 +501,42 @@ inline void MoveBlackPiece(Move& mv, chess& b){
         if ((b.wp & to) != 0){
             b.wp &= ~to;
             mv |= (1 << 18);
+            b.mg -= P_mg + P_mg_table[ctz(to) ^ 56];
+            b.eg -= P_eg + P_eg_table[ctz(to) ^ 56];
         }
         else if ((b.wn & to) != 0){
             b.wn &= ~to;
             mv |= (2 << 18);
+            b.mg -= N_mg + N_mg_table[ctz(to) ^ 56];
+            b.eg -= N_eg + N_eg_table[ctz(to) ^ 56];
+            b.phase -= 1;
         }
         else if ((b.wb & to) != 0){
             b.wb &= ~to;
             mv |= (3 << 18);
+            b.mg -= B_mg + B_mg_table[ctz(to) ^ 56];
+            b.eg -= B_eg + B_eg_table[ctz(to) ^ 56];
+            b.phase -= 1;
         }
         else if ((b.wr & to) != 0){
             b.wr &= ~to;
             mv |= (4 << 18);
+            b.mg -= R_mg + R_mg_table[ctz(to) ^ 56];
+            b.eg -= R_eg + R_eg_table[ctz(to) ^ 56];
+            b.phase -= 2;
         }
         else if ((b.wq & to) != 0){
             b.wq &= ~to;
             mv |= (5 << 18);
+            b.mg -= Q_mg + Q_mg_table[ctz(to) ^ 56];
+            b.eg -= Q_eg + Q_eg_table[ctz(to) ^ 56];
+            b.phase -= 4;
         }
         else if ((b.wk & to) != 0){
             b.wk &= ~to;
             mv |= (6 << 18);
+            b.mg -= K_mg + K_mg_table[ctz(to) ^ 56];
+            b.eg -= K_eg + K_eg_table[ctz(to) ^ 56];
         }
 
         // Remove castle rights
@@ -235,24 +550,47 @@ inline void MoveBlackPiece(Move& mv, chess& b){
             b.bp = (b.bp & ~f) | to;
 
             // En passant
-            if (((mv >> 18) & 7) == 7)
+            if (((mv >> 18) & 7) == 7) {
                 b.wp &= ~(to << 8);
+                b.mg -= P_mg + P_mg_table[ctz(to << 8) ^ 56];
+                b.eg -= P_eg + P_eg_table[ctz(to << 8) ^ 56];
+            }
             if ((ctz(f) - ctz(to)) == 16)
                 b.ep = (ctz(to) & 7);
+            b.mg += P_mg + P_mg_table[ctz(f)];
+            b.mg -= P_mg + P_mg_table[ctz(to)];
+            b.eg += P_eg + P_eg_table[ctz(f)];
+            b.eg -= P_eg + P_eg_table[ctz(to)];
             break;
         case 2:
             b.bn = (b.bn & ~f) | to;
+            b.mg += N_mg + N_mg_table[ctz(f)];
+            b.mg -= N_mg + N_mg_table[ctz(to)];
+            b.eg += N_eg + N_eg_table[ctz(f)];
+            b.eg -= N_eg + N_eg_table[ctz(to)];
             break;
         case 3:
             b.bb = (b.bb & ~f) | to;
+            b.mg += B_mg + B_mg_table[ctz(f)];
+            b.mg -= B_mg + B_mg_table[ctz(to)];
+            b.eg += B_eg + B_eg_table[ctz(f)];
+            b.eg -= B_eg + B_eg_table[ctz(to)];
             break;
         case 4:
             b.br = (b.br & ~f) | to;
             if ((mv & 63) == 63) b.BCastleKing = false;
             else if ((mv & 63) == 56) b.BCastleQueen = false;
+            b.mg += R_mg + R_mg_table[ctz(f)];
+            b.mg -= R_mg + R_mg_table[ctz(to)];
+            b.eg += R_eg + R_eg_table[ctz(f)];
+            b.eg -= R_eg + R_eg_table[ctz(to)];
             break;
         case 5:
             b.bq = (b.bq & ~f) | to;
+            b.mg += Q_mg + Q_mg_table[ctz(f)];
+            b.mg -= Q_mg + Q_mg_table[ctz(to)];
+            b.eg += Q_eg + Q_eg_table[ctz(f)];
+            b.eg -= Q_eg + Q_eg_table[ctz(to)];
             break;
         case 6:
             b.bk = (b.bk & ~f) | to;
@@ -260,21 +598,69 @@ inline void MoveBlackPiece(Move& mv, chess& b){
             // Castle
             if (ctz(f) == 60){
                 // Kingside
-                if (ctz(to) == 62 || ctz(to) == 63) b.br = (b.br & ~(1ULL << 63)) | (1ULL << 61);
+                if (ctz(to) == 62 || ctz(to) == 63) {
+                    b.br = (b.br & ~(1ULL << 63)) | (1ULL << 61);
+                    b.mg += R_mg + R_mg_table[63];
+                    b.mg -= R_mg + R_mg_table[61];
+                    b.eg += R_eg + R_eg_table[63];
+                    b.eg -= R_eg + R_eg_table[61];
+                }
                 //Queen
-                else if (ctz(to) == 58 || ctz(to) == 56) b.br = (b.br & ~(1ULL << 56)) | (1ULL << 59);
+                else if (ctz(to) == 58 || ctz(to) == 56) {
+                    b.br = (b.br & ~(1ULL << 56)) | (1ULL << 59);
+                    b.mg += R_mg + R_mg_table[56];
+                    b.mg -= R_mg + R_mg_table[59];
+                    b.eg += R_eg + R_eg_table[56];
+                    b.eg -= R_eg + R_eg_table[59];
+                }
             }
             b.BCastleKing = false;
             b.BCastleQueen = false;
+            b.mg += K_mg + K_mg_table[ctz(f)];
+            b.mg -= K_mg + K_mg_table[ctz(to)];
+            b.eg += K_eg + K_eg_table[ctz(f)];
+            b.eg -= K_eg + K_eg_table[ctz(to)];
             break;
     }
 
     // Promotion
     switch(((mv >> 12) & 7)){
-        case 2: b.bp &= ~to; b.bn |= to; break;
-        case 3: b.bp &= ~to; b.bb |= to; break;
-        case 4: b.bp &= ~to; b.br |= to; break;
-        case 5: b.bp &= ~to; b.bq |= to; break;
+        case 2: 
+            b.bp &= ~to; 
+            b.bn |= to; 
+            b.mg += P_mg + P_mg_table[ctz(to)];
+            b.mg -= N_mg + N_mg_table[ctz(to)];
+            b.eg += P_eg + P_eg_table[ctz(to)];
+            b.eg -= N_eg + N_eg_table[ctz(to)];
+            b.phase += 1;
+            break;
+        case 3: 
+            b.bp &= ~to; 
+            b.bb |= to; 
+            b.mg += P_mg + P_mg_table[ctz(to)];
+            b.mg -= B_mg + B_mg_table[ctz(to)];
+            b.eg += P_eg + P_eg_table[ctz(to)];
+            b.eg -= B_eg + B_eg_table[ctz(to)];
+            b.phase += 1;
+            break;
+        case 4: 
+            b.bp &= ~to; 
+            b.br |= to; 
+            b.mg += P_mg + P_mg_table[ctz(to)];
+            b.mg -= R_mg + R_mg_table[ctz(to)];
+            b.eg += P_eg + P_eg_table[ctz(to)];
+            b.eg -= R_eg + R_eg_table[ctz(to)];
+            b.phase += 2;
+            break;
+        case 5: 
+            b.bp &= ~to; 
+            b.bq |= to; 
+            b.mg += P_mg + P_mg_table[ctz(to)];
+            b.mg -= Q_mg + Q_mg_table[ctz(to)];
+            b.eg += P_eg + P_eg_table[ctz(to)];
+            b.eg -= Q_eg + Q_eg_table[ctz(to)];
+            b.phase += 4;
+            break;
     }
 }
 
