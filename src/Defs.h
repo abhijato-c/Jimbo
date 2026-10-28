@@ -17,7 +17,7 @@
 
 using namespace std;
 
-typedef std::chrono::high_resolution_clock::time_point timept;
+typedef std::chrono::steady_clock::time_point timept;
 typedef unsigned long long int Bitboard;
 typedef uint32_t Move;
 
@@ -291,7 +291,7 @@ inline Bitboard BishopMovesLookup[64][512];
 #endif
 
 inline int64_t TimeElapsed(timept t){
-	return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - t).count();
+	return chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - t).count();
 }
 
 inline int ctz(const Bitboard b) { return countr_zero(b); }

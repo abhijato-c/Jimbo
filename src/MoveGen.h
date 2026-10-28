@@ -414,12 +414,8 @@ inline MoveList BlackMoves(const chess &b){
 }
 
 inline MoveList PseudoLegals(const chess &b){
-    switch (b.turn){
-        case true:
-            return WhiteMoves(b);
-        case false:
-            return BlackMoves(b);
-    }
+    if (b.turn) return WhiteMoves(b);
+    return BlackMoves(b);
 }
 
 #endif

@@ -61,7 +61,7 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start, int64
 }
 
 inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
-    timept StartTime = chrono::high_resolution_clock::now();
+    timept StartTime = chrono::steady_clock::now();
     Move OverallBestMove = 0;
     int CurrentDepth = 1;
     int BestEval = -INT_MAX;
