@@ -4,10 +4,10 @@
 #include "Defs.h"
 #include "Misc.h"
 
-inline void WKmoves(const chess &b, MoveList &Moves){
-    int i = ctz(b.wk);
+inline void WKmoves(const Board &b, MoveList &Moves){
+    int i = ctz(b.PieceBitboards[WHITE][KING]);
     int j;
-    Bitboard attacks = KingAttacks[i] &~ b.wpcs;
+    Bitboard attacks = KingAttacks[i] &~ b.OccupancyColor[WHITE];
     
     while (attacks) {
         j = ctz(attacks);
@@ -16,29 +16,29 @@ inline void WKmoves(const chess &b, MoveList &Moves){
     }
     
     // Kingside Castling
-    if (b.WCastleKing  &&
-        !(b.pieces & ((1ULL << 5) | (1ULL << 6))) &&
-        !IsAttacked(b, 4, false) &&
-        !IsAttacked(b, 5, false) &&
-        !IsAttacked(b, 6, false))
+    if ((b.CastleRights & 8)  &&
+        !(b.OccupancyAll & ((1ULL << 5) | (1ULL << 6))) &&
+        !IsAttacked(b, 4, BLACK) &&
+        !IsAttacked(b, 5, BLACK) &&
+        !IsAttacked(b, 6, BLACK))
     {
         Moves.push_back((6 << 15) | (6 << 6) | 4);
     }
     // Queenside
-    if (b.WCastleQueen &&
-        !(b.pieces & ((1ULL << 3) | (1ULL << 2) | (1ULL << 1))) &&
-        !IsAttacked(b, 4, false) &&
-        !IsAttacked(b, 3, false) &&
-        !IsAttacked(b, 2, false))
+    if ((b.CastleRights & 4) &&
+        !(b.OccupancyAll & ((1ULL << 3) | (1ULL << 2) | (1ULL << 1))) &&
+        !IsAttacked(b, 4, BLACK) &&
+        !IsAttacked(b, 3, BLACK) &&
+        !IsAttacked(b, 2, BLACK))
     {
         Moves.push_back((6 << 15) | (2 << 6) | 4);
     }
 }
 
-inline void BKmoves(const chess &b, MoveList &Moves){
-    int i = ctz(b.bk);
+inline void BKmoves(const Board &b, MoveList &Moves){
+    int i = ctz(b.PieceBitboards[BLACK][KING]);
     int j;
-    Bitboard attacks = KingAttacks[i] &~ b.bpcs;
+    Bitboard attacks = KingAttacks[i] &~ b.OccupancyColor[BLACK];
     
     while (attacks) {
         j = ctz(attacks);
@@ -47,27 +47,27 @@ inline void BKmoves(const chess &b, MoveList &Moves){
     }
     
     // Kingside
-    if (b.BCastleKing  &&
-        !(b.pieces & ((1ULL << 61) | (1ULL << 62))) &&
-        !IsAttacked(b, 60, true) &&
-        !IsAttacked(b, 61, true) &&
-        !IsAttacked(b, 62, true))
+    if ((b.CastleRights & 2)  &&
+        !(b.OccupancyAll & ((1ULL << 61) | (1ULL << 62))) &&
+        !IsAttacked(b, 60, WHITE) &&
+        !IsAttacked(b, 61, WHITE) &&
+        !IsAttacked(b, 62, WHITE))
     {
         Moves.push_back((6 << 15) | (62 << 6) | 60);
     }
     // Queenside
-    if (b.BCastleQueen &&
-        !(b.pieces & ((1ULL << 59) | (1ULL << 58) | (1ULL << 57))) &&
-        !IsAttacked(b, 60, true) &&
-        !IsAttacked(b, 59, true) &&
-        !IsAttacked(b, 58, true))
+    if ((b.CastleRights & 1) &&
+        !(b.OccupancyAll & ((1ULL << 59) | (1ULL << 58) | (1ULL << 57))) &&
+        !IsAttacked(b, 60, WHITE) &&
+        !IsAttacked(b, 59, WHITE) &&
+        !IsAttacked(b, 58, WHITE))
     {
         Moves.push_back((6 << 15) | (58 << 6) | 60);
     }
 }
 
-inline void WNmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.wn;
+inline void WNmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[WHITE][KNIGHT];
     Bitboard attacks;
     int i;
     int j;
@@ -75,7 +75,7 @@ inline void WNmoves(const chess &b, MoveList &Moves){
         i = ctz(iter);
         iter = blsr(iter);
 
-        attacks = KnightAttacks[i] &~ b.wpcs;
+        attacks = KnightAttacks[i] &~ b.OccupancyColor[WHITE];
         while (attacks) {
             j = ctz(attacks);
             attacks = blsr(attacks);
@@ -84,8 +84,8 @@ inline void WNmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline void BNmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.bn;
+inline void BNmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[BLACK][KNIGHT];
     Bitboard attacks;
     int i;
     int j;
@@ -93,7 +93,7 @@ inline void BNmoves(const chess &b, MoveList &Moves){
         i = ctz(iter);
         iter = blsr(iter);
 
-        attacks = KnightAttacks[i] &~ b.bpcs;
+        attacks = KnightAttacks[i] &~ b.OccupancyColor[BLACK];
         while (attacks) {
             j = ctz(attacks);
             attacks = blsr(attacks);
@@ -102,8 +102,8 @@ inline void BNmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline void WPmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.wp &~ mask_7;
+inline void WPmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[WHITE][PAWN] &~ mask_7;
     int i;
     Bitboard k;
     while(iter){
@@ -112,30 +112,30 @@ inline void WPmoves(const chess &b, MoveList &Moves){
         k = 1ULL << i;
 
         // Single push
-        if ((k << 8) &~ b.pieces)
+        if ((k << 8) &~ b.OccupancyAll)
             Moves.push_back((1 << 15) | ctz(k << 8) << 6 | i);
         
         // Double push
-        if (((((k & mask_2) << 8) &~ b.pieces) << 8) &~ b.pieces)
+        if (((((k & mask_2) << 8) &~ b.OccupancyAll) << 8) &~ b.OccupancyAll)
             Moves.push_back((1 << 15) | ctz(k << 16) << 6 | i);
         
         // Captures
-        if ((k << 7) & b.bpcs & clear_h)
+        if ((k << 7) & b.OccupancyColor[BLACK] & clear_h)
             Moves.push_back((1 << 15) | ctz(k << 7) << 6 | i);
-        if ((k << 9) & b.bpcs & clear_a)
+        if ((k << 9) & b.OccupancyColor[BLACK] & clear_a)
             Moves.push_back((1 << 15) | ctz(k << 9) << 6 | i);
         
         // En passant
-        if (b.ep >= 0){
-            const Bitboard ep = 1ULL << (40 + b.ep);
+        if (b.EpSquare >= 0){
+            const Bitboard ep = 1ULL << (40 + b.EpSquare);
             if ((k << 7) & ep & clear_h) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
             if ((k << 9) & ep & clear_a) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
         }
     }
 }
 
-inline void BPmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.bp &~ mask_2;
+inline void BPmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[BLACK][PAWN] &~ mask_2;
     int i;
     Bitboard k;
 
@@ -145,30 +145,30 @@ inline void BPmoves(const chess &b, MoveList &Moves){
         k = 1ULL << i;
 
         // Single push
-        if ((k >> 8) &~ b.pieces)
+        if ((k >> 8) &~ b.OccupancyAll)
             Moves.push_back((1 << 15) | ctz(k >> 8) << 6 | i);
         
         // Double push
-        if (((((k & mask_7) >> 8) &~ b.pieces) >> 8) &~ b.pieces)
+        if (((((k & mask_7) >> 8) &~ b.OccupancyAll) >> 8) &~ b.OccupancyAll)
             Moves.push_back((1 << 15) | ctz(k >> 16) << 6 | i);
         
         // Captures
-        if ((k >> 7) & b.wpcs & clear_a)
+        if ((k >> 7) & b.OccupancyColor[WHITE] & clear_a)
             Moves.push_back((1 << 15) | ctz(k >> 7) << 6 | i);
-        if ((k >> 9) & b.wpcs & clear_h)
+        if ((k >> 9) & b.OccupancyColor[WHITE] & clear_h)
             Moves.push_back((1 << 15) | ctz(k >> 9) << 6 | i);
         
         // En passant
-        if (b.ep >= 0){
-            const Bitboard ep = 1ULL << (16 + b.ep);
+        if (b.EpSquare >= 0){
+            const Bitboard ep = 1ULL << (16 + b.EpSquare);
             if ((k >> 7) & ep & clear_a) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
             if ((k >> 9) & ep & clear_h) Moves.push_back((7 << 18) | (1 << 15) | ctz(ep) << 6 | i);
         }
     }
 }
 
-inline void WBmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.wb;
+inline void WBmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[WHITE][BISHOP];
     int i;
     while(iter){
         i = ctz(iter);
@@ -176,9 +176,9 @@ inline void WBmoves(const chess &b, MoveList &Moves){
 
         Bitboard it;
         #ifdef USE_BMI2
-            it = (BishopMovesLookup[i][pext(b.pieces,BishopBlockers[i])] &~ b.wpcs);
+            it = (BishopMovesLookup[i][pext(b.OccupancyAll,BishopBlockers[i])] &~ b.OccupancyColor[WHITE]);
         #else
-            it = (BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.wpcs);
+            it = (BishopMovesLookup[i][((b.OccupancyAll & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.OccupancyColor[WHITE]);
         #endif
 
         int j;
@@ -191,8 +191,8 @@ inline void WBmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline void BBmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.bb;
+inline void BBmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[BLACK][BISHOP];
     int i;
     while(iter){
         i = ctz(iter);
@@ -200,9 +200,9 @@ inline void BBmoves(const chess &b, MoveList &Moves){
 
         Bitboard it;
         #ifdef USE_BMI2
-            it = (BishopMovesLookup[i][pext(b.pieces,BishopBlockers[i])] &~ b.bpcs);
+            it = (BishopMovesLookup[i][pext(b.OccupancyAll,BishopBlockers[i])] &~ b.OccupancyColor[BLACK]);
         #else
-            it = (BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.bpcs);
+            it = (BishopMovesLookup[i][((b.OccupancyAll & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])] &~ b.OccupancyColor[BLACK]);
         #endif
         
         int j;
@@ -215,8 +215,8 @@ inline void BBmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline void WRmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.wr;
+inline void WRmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[WHITE][ROOK];
     int i;
     while(iter){
         i = ctz(iter);
@@ -224,9 +224,9 @@ inline void WRmoves(const chess &b, MoveList &Moves){
 
         Bitboard it;
         #ifdef USE_BMI2
-            it = (RookMovesLookup[i][pext(b.pieces,RookBlockers[i])] &~ b.wpcs);
+            it = (RookMovesLookup[i][pext(b.OccupancyAll,RookBlockers[i])] &~ b.OccupancyColor[WHITE]);
         #else
-            it = (RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.wpcs);
+            it = (RookMovesLookup[i][((b.OccupancyAll & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.OccupancyColor[WHITE]);
         #endif
 
         int j;
@@ -239,8 +239,8 @@ inline void WRmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline void BRmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.br;
+inline void BRmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[BLACK][ROOK];
     int i;
     while(iter){
         i = ctz(iter);
@@ -248,9 +248,9 @@ inline void BRmoves(const chess &b, MoveList &Moves){
 
         Bitboard it;
         #ifdef USE_BMI2
-            it = (RookMovesLookup[i][pext(b.pieces,RookBlockers[i])] &~ b.bpcs);
+            it = (RookMovesLookup[i][pext(b.OccupancyAll,RookBlockers[i])] &~ b.OccupancyColor[BLACK]);
         #else
-            it = (RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.bpcs);
+            it = (RookMovesLookup[i][((b.OccupancyAll & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] &~ b.OccupancyColor[BLACK]);
         #endif
 
         int j;
@@ -263,8 +263,8 @@ inline void BRmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline void WQmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.wq;
+inline void WQmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[WHITE][QUEEN];
     int i;
     while(iter){
         i = ctz(iter);
@@ -272,9 +272,9 @@ inline void WQmoves(const chess &b, MoveList &Moves){
 
         Bitboard it;
         #ifdef USE_BMI2
-            it = ((RookMovesLookup[i][pext(b.pieces,RookBlockers[i])] | BishopMovesLookup[i][pext(b.pieces,BishopBlockers[i])]) &~ b.wpcs);
+            it = ((RookMovesLookup[i][pext(b.OccupancyAll,RookBlockers[i])] | BishopMovesLookup[i][pext(b.OccupancyAll,BishopBlockers[i])]) &~ b.OccupancyColor[WHITE]);
         #else
-            it = ((RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] | BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])]) &~ b.wpcs);
+            it = ((RookMovesLookup[i][((b.OccupancyAll & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] | BishopMovesLookup[i][((b.OccupancyAll & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])]) &~ b.OccupancyColor[WHITE]);
         #endif
 
         int j;
@@ -287,8 +287,8 @@ inline void WQmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline void BQmoves(const chess &b, MoveList &Moves){
-    Bitboard iter = b.bq;
+inline void BQmoves(const Board &b, MoveList &Moves){
+    Bitboard iter = b.PieceBitboards[BLACK][QUEEN];
     int i;
     while(iter){
         i = ctz(iter);
@@ -296,9 +296,9 @@ inline void BQmoves(const chess &b, MoveList &Moves){
 
         Bitboard it;
         #ifdef USE_BMI2
-            it = ((RookMovesLookup[i][pext(b.pieces,RookBlockers[i])] | BishopMovesLookup[i][pext(b.pieces,BishopBlockers[i])]) &~ b.bpcs);
+            it = ((RookMovesLookup[i][pext(b.OccupancyAll,RookBlockers[i])] | BishopMovesLookup[i][pext(b.OccupancyAll,BishopBlockers[i])]) &~ b.OccupancyColor[BLACK]);
         #else
-            it = ((RookMovesLookup[i][((b.pieces & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] | BishopMovesLookup[i][((b.pieces & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])]) &~ b.bpcs);
+            it = ((RookMovesLookup[i][((b.OccupancyAll & RookBlockers[i]) * RookMagics[i] >> RookShifts[i])] | BishopMovesLookup[i][((b.OccupancyAll & BishopBlockers[i]) * BishopMagics[i] >> BishopShifts[i])]) &~ b.OccupancyColor[BLACK]);
         #endif
 
         int j;
@@ -311,7 +311,7 @@ inline void BQmoves(const chess &b, MoveList &Moves){
     }
 }
 
-inline MoveList WhiteMoves(const chess &b){
+inline MoveList WhiteMoves(const Board &b){
     MoveList moves;
 
     WKmoves(b,moves);
@@ -324,11 +324,11 @@ inline MoveList WhiteMoves(const chess &b){
     Bitboard v;
     int i;
 
-    v = b.wp & mask_7;
+    v = b.PieceBitboards[WHITE][PAWN] & mask_7;
     while (v){
         i = ctz(v);
         v = blsr(v);
-        if(((1ULL<<(i+8))&b.pieces)==0){
+        if(((1ULL<<(i+8))&b.OccupancyAll)==0){
             moves.push_back((1 << 15) | (2 << 12) | ((i+8) << 6) | i);
             moves.push_back((1 << 15) | (3 << 12) | ((i+8) << 6) | i);
             moves.push_back((1 << 15) | (4 << 12) | ((i+8) << 6) | i);
@@ -336,11 +336,11 @@ inline MoveList WhiteMoves(const chess &b){
         }
     }
 
-    v = b.wp & mask_7 & clear_a;
+    v = b.PieceBitboards[WHITE][PAWN] & mask_7 & clear_a;
     while(v){
         i = ctz(v);
         v = blsr(v);
-        if(((1ULL<<(i+7))&b.bpcs)){
+        if(((1ULL<<(i+7))&b.OccupancyColor[BLACK])){
             moves.push_back((1 << 15) | (2 << 12) | ((i+7) << 6) | i);
             moves.push_back((1 << 15) | (3 << 12) | ((i+7) << 6) | i);
             moves.push_back((1 << 15) | (4 << 12) | ((i+7) << 6) | i);
@@ -348,11 +348,11 @@ inline MoveList WhiteMoves(const chess &b){
         }
     }
 
-    v = b.wp & mask_7 & clear_h;
+    v = b.PieceBitboards[WHITE][PAWN] & mask_7 & clear_h;
     while(v){
         i = ctz(v);
         v = blsr(v);
-        if(((1ULL<<(i+9))&b.bpcs)){
+        if(((1ULL<<(i+9))&b.OccupancyColor[BLACK])){
             moves.push_back((1 << 15) | (2 << 12) | ((i+9) << 6) | i);
             moves.push_back((1 << 15) | (3 << 12) | ((i+9) << 6) | i);
             moves.push_back((1 << 15) | (4 << 12) | ((i+9) << 6) | i);
@@ -362,7 +362,7 @@ inline MoveList WhiteMoves(const chess &b){
     return moves;
 }
 
-inline MoveList BlackMoves(const chess &b){
+inline MoveList BlackMoves(const Board &b){
     MoveList moves;
 
     BKmoves(b,moves);
@@ -375,11 +375,11 @@ inline MoveList BlackMoves(const chess &b){
     Bitboard v;
     int i;
     
-    v = b.bp & mask_2;
+    v = b.PieceBitboards[BLACK][PAWN] & mask_2;
     while(v){
         i = ctz(v);
         v = blsr(v);
-        if(((1ULL<<(i-8))&b.pieces)==0){
+        if(((1ULL<<(i-8))&b.OccupancyAll)==0){
             moves.push_back((1 << 15) | (2 << 12) | ((i-8) << 6) | i);
             moves.push_back((1 << 15) | (3 << 12) | ((i-8) << 6) | i);
             moves.push_back((1 << 15) | (4 << 12) | ((i-8) << 6) | i);
@@ -387,11 +387,11 @@ inline MoveList BlackMoves(const chess &b){
         }
     }
 
-    v = b.bp & mask_2 & clear_h;
+    v = b.PieceBitboards[BLACK][PAWN] & mask_2 & clear_h;
     while(v){
         i = ctz(v);
         v = blsr(v);
-        if(((1ULL<<(i-7))&b.wpcs)){
+        if(((1ULL<<(i-7))&b.OccupancyColor[WHITE])){
             moves.push_back((1 << 15) | (2 << 12) | ((i-7) << 6) | i);
             moves.push_back((1 << 15) | (3 << 12) | ((i-7) << 6) | i);
             moves.push_back((1 << 15) | (4 << 12) | ((i-7) << 6) | i);
@@ -399,11 +399,11 @@ inline MoveList BlackMoves(const chess &b){
         }
     }
 
-    v = b.bp&mask_2&clear_a;
+    v = b.PieceBitboards[BLACK][PAWN] & mask_2 & clear_a;
     while(v){
         i = ctz(v);
         v = blsr(v);
-        if(((1ULL<<(i-9))&b.wpcs)){
+        if(((1ULL<<(i-9))&b.OccupancyColor[WHITE])){
             moves.push_back((1 << 15) | (2 << 12) | ((i-9) << 6) | i);
             moves.push_back((1 << 15) | (3 << 12) | ((i-9) << 6) | i);
             moves.push_back((1 << 15) | (4 << 12) | ((i-9) << 6) | i);
@@ -413,8 +413,8 @@ inline MoveList BlackMoves(const chess &b){
     return moves;
 }
 
-inline MoveList PseudoLegals(const chess &b){
-    if (b.turn) return WhiteMoves(b);
+inline MoveList PseudoLegals(const Board &b){
+    if (b.turn == WHITE) return WhiteMoves(b);
     return BlackMoves(b);
 }
 

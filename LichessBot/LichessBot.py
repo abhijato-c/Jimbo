@@ -44,7 +44,12 @@ if platform.system() == 'Windows':
 else:
     ENGINE_PATH = Path('./LichessBot/Engine')
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=LOG_LEVEL,  datefmt='%H:%M:%S', force=True)
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+    level=LOG_LEVEL, datefmt='%H:%M:%S', force=True,
+    handlers=[logging.StreamHandler(), logging.FileHandler('LichessBot/bot.log')]
+)
+logging.getLogger("chess.engine").setLevel(logging.DEBUG)  # every line sent to / received from Jimbo
 logger = logging.getLogger(__name__)
 
 
@@ -113,7 +118,7 @@ class LichessBot:
     def SpawnEngine(self) -> chess.engine.SimpleEngine:
         try:
             logger.info("Starting Chess Engine...")
-            Engine = chess.engine.SimpleEngine.popen_uci('./' + str(self.EnginePath))
+            Engine = chess.engine.SimpleEngine.popen_uci('./' + str(self.EnginePath), stderr=open('LichessBot/engine_stderr.log', 'a'))
             return Engine
         except Exception as e:
             logger.error(f"Failed to start engine: {e}")
@@ -183,11 +188,26 @@ class LichessBot:
                 logger.info(f"Engine Move: {result.move.uci()}")
                 return result.move.uci()
         except Exception as e:
-            logger.error(f"Engine error: {e}")
+            logger.exception(f"Engine error {e!r} ({type(e).__name__})")
+            logger.error(f"FEN: {board.fen()}")
+            logger.error(f"Moves: {board.root().fen()} + {' '.join(m.uci() for m in board.move_stack)}")
+            logger.error(f"Time limit: {TimeLimit}")
+            try:
+                rc = Engine.protocol.returncode
+                logger.error(f"Engine exited: {rc.done()}, returncode: {rc.result() if rc.done() else None}")
+            except Exception as e2:
+                logger.error(f"Could not read engine status: {e2!r}")
         
         return ""
-    
+
     def PlayGame(self, GameID: str):
+        Engine = None
+        try:
+            self._PlayGame(GameID)
+        except Exception:
+            logger.exception(f"Game {GameID} thread crashed")
+    
+    def _PlayGame(self, GameID: str):
         url = BASE_URL + ENDPOINTS['stream'].format(GameID)
         Color = None
         logger.info(f"Streaming Game: {GameID}")

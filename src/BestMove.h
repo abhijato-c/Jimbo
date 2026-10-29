@@ -6,9 +6,8 @@
 #include "MovePiece.h"
 #include "Misc.h"
 
-// TODO - EARLY CAPTURE INCENTIVE (PROMOTION)
-
-inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start, int64_t time){
+inline int MiniMax(Board &b, int depth, int alpha, int beta, timept start, int64_t time){
+    ++NodeCount;
     if(depth == 1) return StaticEval(b);
 
     MoveList Moves = PseudoLegals(b);
@@ -21,9 +20,8 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start, int64
         int score = 0;
     
         // Capture check
-        if ((b.pieces & (1ULL << ((m >> 6) & 63))) || ((m >> 18) & 7) == 7) {
-            score += 100;
-        }
+        score += b.OccupancyType[(m >> 6) & 63];
+        
         // Promotions
         score += ((m >> 12) & 7) * 100;
 
@@ -42,25 +40,26 @@ inline int MiniMax(chess &b, int depth, int alpha, int beta, timept start, int64
             }
         }
         StaticEvals[MaxIndex] = -INT_MAX;
-        if (!MovePiece(Moves[MaxIndex], b)) continue;
+        if (!MovePiece(b, Moves[MaxIndex])) continue;
         LegalFound = true;
         alpha = max(-MiniMax(b, depth-1, -beta, -alpha, start, time), alpha);
-        UnmovePiece(Moves[MaxIndex], b);
+        UnmovePiece(b, Moves[MaxIndex]);
 
         if (alpha >= beta) return alpha;
-        if ((++NodeCount & 2047) == 0 && (TimeElapsed(start) > time || StopSignal.load())) return alpha;
+        if ((NodeCount & 2047) == 0 && (TimeElapsed(start) > time || StopSignal.load())) return alpha;
     }
 
     if (!LegalFound){
         // Checkmate
-        if (IsAttacked(b, ctz(b.turn ? b.wk : b.bk), b.turn ? false : true)) return (-MATE_BOUND - depth);
+        if (IsAttacked(b, ctz(b.PieceBitboards[b.turn][KING]), b.turn ^ 1))
+            return (-MATE_BOUND - depth);
         // Stalemate
         else return 0;
     }
     return alpha;
 }
 
-inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
+inline Move IterativeDeepening(Board &b, int64_t time, int Mdepth){
     timept StartTime = chrono::steady_clock::now();
     Move OverallBestMove = 0;
     int CurrentDepth = 1;
@@ -81,9 +80,8 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
             int score = 0;
         
             // Capture check
-            if ((b.pieces & (1ULL << ((m >> 6) & 63))) || ((m >> 18) & 7) == 7) {
-                score += 100;
-            }
+            score += b.OccupancyType[(m >> 6) & 63];
+
             // Promotions
             score += ((m >> 12) & 7) * 100;
 
@@ -102,10 +100,10 @@ inline Move IterativeDeepening(chess &b, int64_t time, int Mdepth){
                 }
             }
             StaticEvals[MaxIndex] = -INT_MAX;
-            if (!MovePiece(Moves[MaxIndex], b)) continue;
+            if (!MovePiece(b, Moves[MaxIndex])) continue;
             LegalFound = true;
             eval = -MiniMax(b, CurrentDepth, -beta, -alpha, StartTime, time);
-            UnmovePiece(Moves[MaxIndex], b);
+            UnmovePiece(b, Moves[MaxIndex]);
             
             if (TimeElapsed(StartTime) > time || StopSignal.load()){
                 if(alpha > BestEval) return DepthBestMove; 

@@ -3,7 +3,7 @@
 #include "MoveGen.h"
 #include "Misc.h"
 #include "LookupTables.h"
-#include "MakeMove.h"
+#include "BestMove.h"
 #include <thread>
 #include <atomic>
 
@@ -16,7 +16,7 @@ bool isConvertibleToInt(const string& str, int& value) {
     return ss && ss.eof(); 
 }
 
-void RunSearch(chess brd, int TimeLimit, int DepthLimit){
+void RunSearch(Board brd, int TimeLimit, int DepthLimit){
     Move best = 0;
 
     if (DepthLimit == 0) best = IterativeDeepening(brd, TimeLimit, INT_MAX);
@@ -38,7 +38,7 @@ int main(){
 
     string InitialFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     string line;
-    chess brd;
+    Board brd;
     ParseFEN(InitialFEN, brd);
 
     cout << "Jimbo ready and accepting commands!" << endl;
@@ -88,7 +88,7 @@ int main(){
             
             for (size_t i = StartInd; StartInd >= 0 && i < command.size(); ++i) {
                 Move m = StrToMove(command[i], brd);
-                MovePiece(m, brd);
+                MovePiece(brd, m);
             }
         } 
         else if (cmd == "go") {
@@ -128,8 +128,8 @@ int main(){
 
             if (inf) TimeLimit = INT_MAX;
             else if (!TimeSet && !(wtime == 0 || btime == 0)) {
-                int time = brd.turn ? wtime : btime;
-                int inc = brd.turn ? winc : binc;
+                int time = (brd.turn == WHITE) ? wtime : btime;
+                int inc = (brd.turn == WHITE) ? winc : binc;
                 if (time > 0) {
                     TimeLimit = (time / moves) + (inc / 2);
                     if (TimeLimit < 10) TimeLimit = 10;

@@ -4,41 +4,72 @@
 #include "Defs.h"
 #include <sstream>
 
-inline int StaticEval(const chess &b){
-    int phase = clamp(b.phase, 0, 24);
-    int score = (phase * b.mg) + ((24 - phase) * b.eg);
-    return b.turn ? score : -score;
+inline int StaticEval(const Board &b){
+    int phase = clamp(b.Phase, 0, 24);
+    int score = (phase * b.ScoreMg) + ((24 - phase) * b.ScoreEg);
+    return (b.turn == WHITE) ? score : -score;
 }
 
-inline bool IsAttacked(const chess &b, int sq, bool byWhite){
+inline void Put(Board &b, int Color, int Type, int Square) {
+    Bitboard bit = 1ULL << Square;
+
+    b.PieceBitboards[Color][Type] ^= bit; 
+    b.OccupancyColor[Color] ^= bit; 
+    b.OccupancyAll ^= bit; 
+    b.OccupancyType[Square] = Type;
+
+    b.ScoreMg += PsqtMg[Color][Type][Square]; 
+    b.ScoreEg += PsqtEg[Color][Type][Square]; 
+    b.Phase   += PhaseValues[Type];
+}
+
+inline void Take(Board &b, int Color, int Type, int Square) {
+    Bitboard bit = 1ULL << Square;
+
+    b.PieceBitboards[Color][Type] ^= bit; 
+    b.OccupancyColor[Color] ^= bit; 
+    b.OccupancyAll ^= bit; 
+    b.OccupancyType[Square] = 0;
+
+    b.ScoreMg -= PsqtMg[Color][Type][Square]; 
+    b.ScoreEg -= PsqtEg[Color][Type][Square]; 
+    b.Phase   -= PhaseValues[Type];
+}
+
+inline bool IsAttacked(const Board &b, int sq, int AttackedByColor){
     const Bitboard sqBB = 1ULL << sq;
 
     const Bitboard KnightAtt = KnightAttacks[sq];
     const Bitboard KingAtt = KingAttacks[sq];
+    Bitboard RookAtt;
+    Bitboard BishopAtt;
+    Bitboard QueenAtt;
 
     #ifdef USE_BMI2
-        const Bitboard diag = BishopMovesLookup[sq][pext(b.pieces, BishopBlockers[sq])];
-        const Bitboard orth = RookMovesLookup[sq][pext(b.pieces, RookBlockers[sq])];
+        BishopAtt = BishopMovesLookup[sq][pext(b.OccupancyAll, BishopBlockers[sq])];
+        RookAtt = RookMovesLookup[sq][pext(b.OccupancyAll, RookBlockers[sq])];
+        QueenAtt = BishopAtt | RookAtt;
     #else
-        const Bitboard diag = BishopMovesLookup[sq][
-            ((b.pieces & BishopBlockers[sq]) * BishopMagics[sq]) >> BishopShifts[sq]];
-        const Bitboard orth = RookMovesLookup[sq][
-            ((b.pieces & RookBlockers[sq])   * RookMagics[sq])   >> RookShifts[sq]];
+        BishopAtt = BishopMovesLookup[sq][((b.OccupancyAll & BishopBlockers[sq]) * BishopMagics[sq]) >> BishopShifts[sq]];
+        RookAtt = RookMovesLookup[sq][((b.OccupancyAll & RookBlockers[sq])   * RookMagics[sq])   >> RookShifts[sq]];
+        QueenAtt = BishopAtt | RookAtt;
     #endif
  
-    if (byWhite){
-        if (b.wp & (((sqBB & clear_h) >> 7) | ((sqBB & clear_a) >> 9))) return true;
-        if (b.wn & KnightAtt)               return true;
-        if ((b.wb | b.wq) & diag)    return true;
-        if ((b.wr | b.wq) & orth)    return true;
-        if (b.wk & KingAtt)         return true;
+    if (AttackedByColor == WHITE){
+        if (b.PieceBitboards[WHITE][PAWN] & (((sqBB & clear_h) >> 7) | ((sqBB & clear_a) >> 9))) return true;
+        if (b.PieceBitboards[WHITE][KNIGHT] & KnightAtt) return true;
+        if (b.PieceBitboards[WHITE][BISHOP] & BishopAtt) return true;
+        if (b.PieceBitboards[WHITE][ROOK]   & RookAtt)   return true;
+        if (b.PieceBitboards[WHITE][QUEEN]  & QueenAtt)  return true;
+        if (b.PieceBitboards[WHITE][KING]   & KingAtt)   return true;
     } 
     else {
-        if (b.bp & (((sqBB & clear_a) << 7) | ((sqBB & clear_h) << 9))) return true;
-        if (b.bn & KnightAtt)               return true;
-        if ((b.bb | b.bq) & diag)    return true;
-        if ((b.br | b.bq) & orth)    return true;
-        if (b.bk & KingAtt)         return true;
+        if (b.PieceBitboards[BLACK][PAWN] & (((sqBB & clear_a) << 7) | ((sqBB & clear_h) << 9))) return true;
+        if (b.PieceBitboards[BLACK][KNIGHT] & KnightAtt) return true;
+        if (b.PieceBitboards[BLACK][BISHOP] & BishopAtt) return true;
+        if (b.PieceBitboards[BLACK][ROOK]   & RookAtt)   return true;
+        if (b.PieceBitboards[BLACK][QUEEN]  & QueenAtt)  return true;
+        if (b.PieceBitboards[BLACK][KING]   & KingAtt)   return true;
     }
     return false;
 }
@@ -67,51 +98,39 @@ inline string MoveToStr(const Move move){
     return MoveStr;
 }
 
-inline Move StrToMove(const string MoveStr, chess& b){
+inline Move StrToMove(const string MoveStr, Board &b){
     int FromFile = MoveStr[0] - 'a';
     int FromRank = MoveStr[1] - '1';
     int ToFile   = MoveStr[2] - 'a';
     int ToRank   = MoveStr[3] - '1';
 
-    uint32_t from = FromFile + (FromRank * 8);
-    uint32_t to = ToFile + (ToRank * 8);
-    uint32_t prom = 0;
-    uint32_t fromPc = 0;
-    uint32_t capPc = 0;
+    int from = FromFile + (FromRank * 8);
+    int to = ToFile + (ToRank * 8);
+    int PromoteType = 0;
+    int FromType = 0;
+    int CaptureType = 0;
 
     // Handle Promoted Piece
     if (MoveStr.length() == 5){
         switch(MoveStr[4]){
-            case 'n': prom = 2; break;
-            case 'b': prom = 3; break;
-            case 'r': prom = 4; break;
-            case 'q': prom = 5; break;
+            case 'n': PromoteType = 2; break;
+            case 'b': PromoteType = 3; break;
+            case 'r': PromoteType = 4; break;
+            case 'q': PromoteType = 5; break;
         }
     }
 
     // Identify from piece
-    if ((b.wp | b.bp) & (1ULL << from)) fromPc = 1;
-    else if ((b.wn | b.bn) & (1ULL << from)) fromPc = 2;
-    else if ((b.wb | b.bb) & (1ULL << from)) fromPc = 3;
-    else if ((b.wr | b.br) & (1ULL << from)) fromPc = 4;
-    else if ((b.wq | b.bq) & (1ULL << from)) fromPc = 5;
-    else if ((b.wk | b.bk) & (1ULL << from)) fromPc = 6;
+    FromType = b.OccupancyType[from];
 
     // Identify captured piece
-    if ((b.wp | b.bp) & (1ULL << to)) capPc = 1;
-    else if ((b.wn | b.bn) & (1ULL << to)) capPc = 2;
-    else if ((b.wb | b.bb) & (1ULL << to)) capPc = 3;
-    else if ((b.wr | b.br) & (1ULL << to)) capPc = 4;
-    else if ((b.wq | b.bq) & (1ULL << to)) capPc = 5;
-    else if ((b.wk | b.bk) & (1ULL << to)) capPc = 6;
-
-    // En passant detection
-    if (fromPc == 1 && FromFile != ToFile && capPc == 0)  capPc = 7;
+    CaptureType = b.OccupancyType[to];
+    if (FromType == 1 && FromFile != ToFile && CaptureType == 0)  CaptureType = 7;
     
-    return (capPc << 18) | (fromPc << 15) | (prom << 12) | (to << 6) | from;
+    return (CaptureType << 18) | (FromType << 15) | (PromoteType << 12) | (to << 6) | from;
 }
 
-inline void ParseFEN(string FullFEN, chess &b){
+inline void ParseFEN(string FullFEN, Board &b){
     // Split FEN
     vector<string> segments = {};
     string token;
@@ -125,27 +144,27 @@ inline void ParseFEN(string FullFEN, chess &b){
     string epSquare = segments[3];
     
     // Reset board
-    b.wp=0ULL; b.wr=0ULL; b.wn=0ULL; b.wb=0ULL; b.wq=0ULL; b.wk=0ULL;
-    b.bp=0ULL; b.br=0ULL; b.bn=0ULL; b.bb=0ULL; b.bq=0ULL; b.bk=0ULL;
-    b.mg = 0; b.eg = 0; b.phase = 0;
-    b.ep = -1;
-    b.WCastleKing = false; b.WCastleQueen = false; b.BCastleKing = false; b.BCastleQueen = false;
+    for (int pt = 0; pt < 7; ++pt) {b.PieceBitboards[0][pt] = 0ULL; b.PieceBitboards[1][pt] = 0ULL; }
+    for (int sq = 0; sq < 64; ++sq) b.OccupancyType[sq] = 0;
+    b.OccupancyColor[0] = 0ULL; b.OccupancyColor[1] = 0ULL; b.OccupancyAll = 0ULL;
+    b.ScoreMg = 0; b.ScoreEg = 0; b.Phase = 0;
+    b.EpSquare = -1; b.CastleRights = 0;
 
     // Set turn
-    if (plr == "w") b.turn = true;
-    else b.turn = false;
+    if (plr == "w") b.turn = WHITE;
+    else b.turn = BLACK;
 
     // Castling rights
     for (char c : CastleRights) {
-        if (c == 'K') b.WCastleKing = true;
-        else if (c == 'Q') b.WCastleQueen = true;
-        else if (c == 'k') b.BCastleKing = true;
-        else if (c == 'q') b.BCastleQueen = true;
+        if (c == 'K')      b.CastleRights |= 8;
+        else if (c == 'Q') b.CastleRights |= 4;
+        else if (c == 'k') b.CastleRights |= 2;
+        else if (c == 'q') b.CastleRights |= 1;
     }
 
     // Ep square
     if (epSquare != "-")
-        b.ep = epSquare[0] - 'a';
+        b.EpSquare = epSquare[0] - 'a';
 
     // Piece arrangement (a1 = 0, b1 = 1, ... h1 = 7, a2 = 8, ... h8 = 63)
     int rank = 7, file = 0;
@@ -157,80 +176,22 @@ inline void ParseFEN(string FullFEN, chess &b){
             int ind = rank * 8 + file;
             ++file;
             switch(c){
-                case 'p': 
-                    b.bp |= sq; 
-                    b.mg -= P_mg + P_mg_table[ind]; 
-                    b.eg -= P_eg + P_eg_table[ind];
-                    break;
-                case 'n': 
-                    b.bn |= sq; 
-                    b.mg -= N_mg + N_mg_table[ind]; 
-                    b.eg -= N_eg + N_eg_table[ind];
-                    b.phase += 1;
-                    break;
-                case 'b': 
-                    b.bb |= sq; 
-                    b.mg -= B_mg + B_mg_table[ind]; 
-                    b.eg -= B_eg + B_eg_table[ind];
-                    b.phase += 1;
-                    break;
-                case 'r': 
-                    b.br |= sq; 
-                    b.mg -= R_mg + R_mg_table[ind]; 
-                    b.eg -= R_eg + R_eg_table[ind];
-                    b.phase += 2;
-                    break;
-                case 'q': 
-                    b.bq |= sq; 
-                    b.mg -= Q_mg + Q_mg_table[ind]; 
-                    b.eg -= Q_eg + Q_eg_table[ind];
-                    b.phase += 4;
-                    break;
-                case 'k': 
-                    b.bk |= sq; 
-                    b.mg -= K_mg + K_mg_table[ind]; 
-                    b.eg -= K_eg + K_eg_table[ind];
-                    break;
-                case 'P': 
-                    b.wp |= sq; 
-                    b.mg += P_mg + P_mg_table[ind ^ 56]; 
-                    b.eg += P_eg + P_eg_table[ind ^ 56];
-                    break;
-                case 'N': 
-                    b.wn |= sq; 
-                    b.mg += N_mg + N_mg_table[ind ^ 56]; 
-                    b.eg += N_eg + N_eg_table[ind ^ 56];
-                    b.phase += 1;
-                    break;
-                case 'B': 
-                    b.wb |= sq;
-                    b.mg += B_mg + B_mg_table[ind ^ 56]; 
-                    b.eg += B_eg + B_eg_table[ind ^ 56];
-                    b.phase += 1;
-                    break;
-                case 'R': 
-                    b.wr |= sq; 
-                    b.mg += R_mg + R_mg_table[ind ^ 56]; 
-                    b.eg += R_eg + R_eg_table[ind ^ 56];
-                    b.phase += 2;
-                    break;
-                case 'Q': 
-                    b.wq |= sq; 
-                    b.mg += Q_mg + Q_mg_table[ind ^ 56]; 
-                    b.eg += Q_eg + Q_eg_table[ind ^ 56];
-                    b.phase += 4;
-                    break;
-                case 'K': 
-                    b.wk |= sq;
-                    b.mg += K_mg + K_mg_table[ind ^ 56]; 
-                    b.eg += K_eg + K_eg_table[ind ^ 56];
-                    break;
+                case 'p': Put(b, BLACK, PAWN, ind);   break;
+                case 'n': Put(b, BLACK, KNIGHT, ind); break;
+                case 'b': Put(b, BLACK, BISHOP, ind); break;
+                case 'r': Put(b, BLACK, ROOK, ind);   break;
+                case 'q': Put(b, BLACK, QUEEN, ind);  break;
+                case 'k': Put(b, BLACK, KING, ind);   break;
+                case 'P': Put(b, WHITE, PAWN, ind);   break;
+                case 'N': Put(b, WHITE, KNIGHT, ind); break;
+                case 'B': Put(b, WHITE, BISHOP, ind); break;
+                case 'R': Put(b, WHITE, ROOK, ind);   break;
+                case 'Q': Put(b, WHITE, QUEEN, ind);  break;
+                case 'K': Put(b, WHITE, KING, ind);   break;
             }
+            
         }
     }
-    b.bpcs=b.bp|b.br|b.bn|b.bb|b.bq|b.bk;
-    b.wpcs=b.wp|b.wr|b.wn|b.wb|b.wq|b.wk;
-    b.pieces=b.bpcs|b.wpcs;
 }
 
 #endif
