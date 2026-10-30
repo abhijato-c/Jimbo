@@ -1,0 +1,18 @@
+simultaneous_games: 4
+
+accept_rated: true
+accept_casual: true
+
+accepted_variants:
+  - standard
+
+accepted_time_controls:
+  - bullet
+  - blitz
+  - rapid
+  - classical
+
+use_move_history: true
+
+move_overhead: 0.25
+max_move_time: 60.0
