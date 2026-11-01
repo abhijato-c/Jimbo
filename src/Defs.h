@@ -34,6 +34,7 @@ Move encoding
 */
 
 constexpr int MATE_BOUND = INT_MAX - 1000;
+constexpr Move MOVE_MASK = (1u << 18) - 1;
 constexpr int PhaseValues[7] = {0, 0, 1, 1, 2, 4, 0};
 inline unsigned int NodeCount;
 extern atomic<bool> StopSignal;
