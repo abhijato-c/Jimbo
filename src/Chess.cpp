@@ -4,6 +4,8 @@
 #include "Misc.h"
 #include "LookupTables.h"
 #include "BestMove.h"
+
+#include <vector>
 #include <thread>
 #include <atomic>
 

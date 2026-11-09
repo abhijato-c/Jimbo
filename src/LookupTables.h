@@ -1,6 +1,7 @@
 #ifndef LOOKUPTABLES_H
 #define LOOKUPTABLES_H
 
+#include <vector>
 #include "Defs.h"
 
 inline Bitboard ComputeKingMoves(Bitboard piece){

@@ -2,17 +2,22 @@
 #define DEFS_H
 
 #include <iostream>
-#include <vector>
 #include <chrono>
-#include <immintrin.h>
 #include <bit>
 #include <atomic>
 #include <climits>
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__)
+    #include <immintrin.h>
+#endif
+
+#if defined(__BMI2__) && !defined(NO_PEXT) && !defined(USE_BMI2)
+    #define USE_BMI2
+#endif
+
 #ifdef USE_BMI2
-     #include <immintrin.h>
-     #define pext(val, mask) _pext_u64(val, mask)
-	#define pdep(val, mask) _pdep_u64(val, mask)
-	#define blsr(val) _blsr_u64(val)
+    #define pext(val, mask) _pext_u64(val, mask)
+    #define pdep(val, mask) _pdep_u64(val, mask)
 #endif
 
 using namespace std;
@@ -72,6 +77,7 @@ struct MoveList {
 inline int64_t TimeElapsed(timept t) { return chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - t).count(); }
 inline int ctz(const Bitboard b) { return countr_zero(b); }
 inline int popcnt(const Bitboard b) { return popcount(b); }
+inline Bitboard blsr(const Bitboard v) { return v & (v - 1); }
 
 #ifndef USE_BMI2
      inline Bitboard pdep(Bitboard val, Bitboard mask) {
@@ -83,7 +89,6 @@ inline int popcnt(const Bitboard b) { return popcount(b); }
           }
           return res;
      }
-     inline Bitboard blsr(Bitboard val) { return val & (val - 1); }
 #endif
 
 inline constexpr int CASTLE_MASK[64] = {

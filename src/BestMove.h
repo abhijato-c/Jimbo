@@ -35,10 +35,17 @@ inline int MiniMax(Board &b, int depth, int alpha, int beta, timept start, int64
     bool LegalFound = false;
     int n = Moves.size();
     int scores[256];
-    for (int i = 0; i < n; ++i) scores[i] = ScoreMove(b, Moves[i]);
+    int nPos = 0;
+    for (int i = 0; i < n; ++i) {
+        scores[i] = ScoreMove(b, Moves[i]); 
+        nPos += (scores[i] > 0); 
+    }
 
     for (int i = 0; i < n; ++i){
-        PickNext(Moves, scores, n, i);
+        if (nPos > 0) {
+            PickNext(Moves, scores, n, i); 
+            --nPos; 
+        }
         Move &m = Moves[i];
         if (!MovePiece(b, m)) continue;
         LegalFound = true;
@@ -73,11 +80,18 @@ inline Move IterativeDeepening(Board &b, int64_t time, int Mdepth){
         MoveList Moves = PseudoLegals(b);
         int n = Moves.size();
         int scores[256];
+        int nPos = 0;
         
-        for (int i = 0; i < n; ++i) scores[i] = ScoreMove(b, Moves[i], OverallBestMove);
+        for (int i = 0; i < n; ++i) {
+            scores[i] = ScoreMove(b, Moves[i], OverallBestMove); 
+            nPos += (scores[i] > 0); 
+        }
 
         for (int i = 0; i < n; ++i){
-            PickNext(Moves, scores, n, i);
+            if (nPos > 0) {
+                PickNext(Moves, scores, n, i); 
+                --nPos; 
+            }
             Move &m = Moves[i];
             if (!MovePiece(b, m)) continue;
             LegalFound = true;

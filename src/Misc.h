@@ -1,8 +1,9 @@
 #ifndef MISC_H
 #define MISC_H
 
-#include "Defs.h"
 #include <sstream>
+#include <vector>
+#include "Defs.h"
 
 inline int StaticEval(const Board &b){
     int phase = clamp(b.Phase, 0, 24);
@@ -172,7 +173,6 @@ inline void ParseFEN(string FullFEN, Board &b){
         if (c == '/')        { --rank; file = 0; }
         else if (isdigit(c)) { file += c - '0'; }
         else {
-            Bitboard sq = 1ULL << (rank * 8 + file);
             int ind = rank * 8 + file;
             ++file;
             switch(c){
